@@ -1,0 +1,18 @@
+# Environments
+.venv/
+env/
+venv/
+
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Generated Artifacts and ML Models
+artifacts/
+*.joblib
+
+# OS generated files
+.DS_Store
+Thumbs.db
