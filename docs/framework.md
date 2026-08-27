@@ -389,11 +389,9 @@ Where:
 The discrepancy term $\delta(x)$ acts as a mathematical sponge. It absorbs systematic, structured errors that the ODE model cannot capture, preventing those errors from biasing your physical parameter estimates $\boldsymbol{\theta}$.
 ```mermaid
 graph TD
-  A[Real-World Data] --> B[Complete System Response]
-  B --> C[Mechanistic ODE Model]
-  C --> C2[Captures primary physical laws]
-  B --> D[Discrepancy GP]
-  D --> D2[Absorbs unmodeled phenomena]
+  A["Real-World Data"] --> B["Complete System Response<br/>y_real(x)"]
+  B --> C["Mechanistic ODE Model y_model(x, θ)<br/>• Captures primary physical laws<br/>• Mass balance, Arrhenius kinetics"]
+  B --> D["Discrepancy GP δ(x)<br/>• Absorbs unmodeled phenomena<br/>• Mixing anomalies, side reactions"]
 ```
 ## Discrepancy Diagnostics: Residual Analysis
 To diagnose whether deviations are caused by random noise or structural model flaws, we analyze the prediction residuals over time:

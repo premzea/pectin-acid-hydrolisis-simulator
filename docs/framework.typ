@@ -907,14 +907,12 @@ preventing those errors from biasing your physical parameter estimates
 $bold(theta)$.
 
 #mermaid(
-  ```
-  graph TD
-    A[Real-World Data] --> B[Complete System Response]
-    B --> C[Mechanistic ODE Model]
-    C --> C2[Captures primary physical laws]
-    B --> D[Discrepancy GP]
-    D --> D2[Absorbs unmodeled phenomena]
-  ```,
+```
+graph TD
+  A["Real-World Data"] --> B["Complete System Response<br/>y_real(x)"]
+  B --> C["Mechanistic ODE Model y_model(x, θ)<br/>• Captures primary physical laws<br/>• Mass balance, Arrhenius kinetics"]
+  B --> D["Discrepancy GP δ(x)<br/>• Absorbs unmodeled phenomena<br/>• Mixing anomalies, side reactions"]
+```
 )
 
 == Discrepancy Diagnostics: Residual Analysis
