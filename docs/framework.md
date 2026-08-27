@@ -161,6 +161,7 @@ This mathematical structure guarantees that if the system initializes with non-n
 ------------------------------
 ## 4. Model Verification vs. Model Validation
 Engineers frequently conflate verification and validation, using them interchangeably. In scientific machine learning and system identification, they represent distinct, non-overlapping tasks.
+```mermaid
 graph TD
   subgraph MATHEMATICAL DESIGN
     direction TB
@@ -200,6 +201,14 @@ Before attempting parameter estimation, we must determine if our parameters can 
 In complex systems, parameters rarely act in complete isolation. Instead, they often compensate for one another.
 For instance, an increase in a reaction rate constant can be almost perfectly offset by a corresponding change in an activation energy or a mass transfer coefficient. This creates a flat valley or "trough" in the optimization landscape.
 The individual parameters cannot be uniquely resolved; only their combined ratio or product is identifiable. The direction along the valley floor is known as a sloppy direction, whereas the steep walls of the valley represent stiff directions.
+
+```mermaid
+graph TD
+  subgraph Parameter Identifiability SVD
+    A[Stiff Direction: High Sensitivity] --- B((Parameter Estimate))
+    B --- C[Sloppy Direction: Parameter compensation valley]
+  end
+```
                    Parameter θ₂
                         ▲
 ## The Sensitivity Matrix
@@ -307,15 +316,13 @@ $$
 \ln p(D \mid \boldsymbol{\theta}, \sigma) = -\frac{N}{2}\ln(2\pi) - N\ln(\sigma) - \frac{1}{2\sigma^2} \sum_{k=1}^{N} \left( y_{\text{observed}}(t_k) - y_{\text{model}}(t_k, \boldsymbol{\theta}) \right)^2
 $$
 This reveals why minimizing the sum of squared errors in standard regression is mathematically equivalent to maximizing the log-likelihood under an assumption of homoscedastic Gaussian noise.
+
 ```mermaid
 graph TD
   subgraph Uninformative Prior
     A[Uniform / Broad distribution]
   end
   subgraph Informative Prior
-    B[Gaussian / Literature Bound]
-  end
-```
     B[Gaussian / Literature Bound]
   end
 ```
@@ -344,10 +351,7 @@ These analytical techniques require extensive preparation, take hours to complet
 To accelerate the loop, we introduce proxy measurements: cheap, non-destructive, instantaneous indicators that can be monitored continuously online (e.g., Fourier-Transform Infrared Spectroscopy (FTIR), Total Soluble Solids via Refractive Index ($^\circ\text{Brix}$), online fluid density, or simple medium $\text{pH}$).
 ```mermaid
 graph LR
-```mermaid
-graph LR
   A[TRUE METRIC: High-MW Pectin Pool] -.->|Calibration| B[PROXY INDICATOR: FTIR Spectrum Absorbance]
-```
 ```
                               Model
 ## Mathematical Calibration Mappings
