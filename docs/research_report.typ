@@ -124,5 +124,32 @@ Where $y = (Y, DE, M_w, X_{"GalA"})$ and $z = (text("FTIR"), t_{"flow"}, C_{"ppt
 This formulation allows the digital twin to naturally consume the empirical proxy uncertainty via the Root Mean Square Error of Prediction (RMSEP) derived from a Leave-One-Run-Out (LORO) validation experiment:
 $ p(theta mid z) = integral p(theta mid y) p(y mid z) dy $
 
+= Physical Implementation & Minimum Viable Laboratory (MVP)
+The hierarchical measurement architecture directly enables a decentralized, low-capital laboratory strategy. By mathematically separating high-frequency proxies from low-frequency ground-truth anchors, the physical execution requires minimal in-house capital expenditure.
+
+== Equipment Sourcing Strategy
+The project relies on a hybrid execution model, partnering with university core facilities for spectral and chromatographic capabilities:
+
+1. *In-House (Own / Operate)*: 
+   - 1.0 -- 2.0 L jacketed glass reactor (sized to prevent S:L ratio drift during 120 mL cumulative sampling).
+   - Continuous RTD temperature logging and pH meters.
+   - Standardized precipitation equipment (centrifuge, vacuum oven).
+   - Calibrated analytical balance (Critical: drives the entire mass-basis of the kinetic ODE).
+   - Capillary viscometer and UV-Vis spectrophotometer (initial cheap proxy and GalA anchor).
+2. *University / Core Facility Access*: 
+   - ATR-FTIR Spectrometer (High-frequency chemical proxy).
+   - HPSEC-MALLS (Low-frequency $M_w$ anchor).
+
+Expensive automated bioreactors, inline FTIR sensors, and sophisticated rheometers are explicitly deferred. The proxy models adapt to the manual but highly standardized benchtop data.
+
+== Analytical Discipline & Traceability
+The true bottleneck is not analytical hardware, but data traceability. The Bayesian inference engine requires an unbroken relational chain linking the final measurement back to the thermodynamic history of the extraction. 
+
+The primary key for all data ingestion is the composite `SampleID` (e.g., `B002-R07-S03`). This uniquely binds a physical pellet to:
+$ t_{"aliquot"} + T(t) + p H(t) + m_{"liquor"} + m_{"pellet"} $
+If this chain is broken, the sample's process history cannot be assigned reliably, rendering it unsuitable for kinetic inference.
+
 = Conclusion & Execution Map
-The mechanistic model has been verified, structural identifiability resolved via D-optimal design, and the measurement architecture strictly defined. The immediate next step is the physical **Phase 1 Proxy Calibration**, generating 30 paired observations across 5 OED extreme trajectories to construct the $p(y mid z)$ measurement likelihoods. Once established, the system proceeds to the 14-run kinetic reactor campaign for final parameter closure.
+The mechanistic model has been mathematically verified, structural identifiability resolved via D-optimal design, and the measurement architecture strictly defined. By framing the laboratory itself as a probabilistic parameter inside the digital twin, the project is insulated from the capital costs and physical biases that typically derail bioreactor optimization.
+
+The immediate physical step is the **Phase 1 Proxy Calibration**, generating 30 paired observations across 5 OED extreme trajectories to construct the $p(y mid z)$ measurement likelihoods. Once the chemometric and rheological proxies are validated against the SEC/Titration anchors, the system proceeds to the dense 14-run kinetic reactor campaign for final parameter closure.
