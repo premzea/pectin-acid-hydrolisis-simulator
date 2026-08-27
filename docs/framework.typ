@@ -1021,6 +1021,12 @@ The left term scales with the predicted improvement in performance
 model uncertainty (exploration). This elegant mathematical trade-off
 prevents the system from getting stuck in local optima.
 
+#figure(
+  image("assets/acquisition_tradeoff.svg", width: 95%),
+  caption: [The Exploration-Exploitation Tradeoff in Bayesian Optimization: Gaussian Process surrogate posterior with 95% credible bounds (top) and Acquisition Function landscape (bottom), demonstrating Candidate A (exploitation of high mean) vs Candidate B (exploration of high uncertainty).]
+)
+
+
 #mermaid(
   ```
   graph LR

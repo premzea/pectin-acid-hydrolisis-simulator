@@ -442,16 +442,7 @@ $$
 Z = \frac{\mu(\mathbf{x}) - f(\mathbf{x}^+)}{\sigma(\mathbf{x})}
 $$
 The left term scales with the predicted improvement in performance (exploitation), while the right term scales directly with the local model uncertainty (exploration). This elegant mathematical trade-off prevents the system from getting stuck in local optima.
-```mermaid
-graph LR
-  subgraph Acquisition Value alpha
-    direction LR
-    A[Exploit High Mean]
-    B[Explore High Uncertainty]
-  end
-  CandidateA[Candidate A] --> A
-  CandidateB[Candidate B] --> B
-```
+![The Exploration-Exploitation Tradeoff in Bayesian Optimization: Gaussian Process posterior with 95% credible bounds (top) and Acquisition Function landscape (bottom), demonstrating Candidate A (exploitation of high mean) vs Candidate B (exploration of high uncertainty)](assets/acquisition_tradeoff.svg)
 ## The Autonomous Closed Loop in Practice
 When operating fully closed-loop, the self-learning framework executes these steps autonomously:
    1. Evaluate: The GP surrogate evaluates the Expected Improvement $\alpha_{\text{EI}}(\mathbf{x})$ across a vast grid of candidate operating conditions.
