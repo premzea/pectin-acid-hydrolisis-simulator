@@ -213,6 +213,10 @@ Applying this to the Pectin Arrhenius kinetics exposes a classic parameter compe
 *Engineering Interpretation*
 Large singular values correspond to "stiff" directions—parameters tightly constrained by the data. Small singular values are the "sloppy" directions. Identifying a sloppy direction explicitly informs the engineer that they cannot uniquely resolve the individual parameters from the current experimental setup; they must redesign the experiment (e.g., probing wider temperature extremes of $60^compose upright("C")$ and $100^compose upright("C")$) to break the correlation, or accept that the parameters are structurally unidentifiable.
 
+#align(center)[
+  #image("assets/parameter_identifiability_sloppy.svg", width: 90%)
+]
+
 === 9. Model Criticism and Discrepancy
 
 *Intuition*
@@ -271,6 +275,10 @@ In the Passion-Fruit Pectin system, using an uninformative flat prior for the hy
 
 *Engineering Interpretation*
 Bayesian inference provides a complete topological map of parameter uncertainty. It tells the engineer not just the "best" physical constants, but precisely how much trust should be placed in those constants during scale-up, directly preventing catastrophic over-optimism.
+
+#align(center)[
+  #image("assets/priors_comparison.svg", width: 95%)
+]
 
 === 11. State/Proxy Inference and Uncertainty Propagation
 
@@ -387,6 +395,10 @@ To maximize the high-MW functional pectin pool ($upright("P")_upright("sol")$), 
 
 *Engineering Interpretation*
 In this framework, machine learning is relegated to its proper place: it does not replace the physical ODEs, nor does it attempt to learn the laws of thermodynamics. It simply acts as a fast topological interpolation layer over the ODEs' outputs, balancing the risk and reward of finding the optimal engineering setpoint.
+
+#align(center)[
+  #image("assets/acquisition_tradeoff.svg", width: 95%)
+]
 
 === 16. The Explicit Separation of Optimization vs. Control
 
