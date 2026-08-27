@@ -1,4 +1,4 @@
-#import "@preview/merman:0.3.1": *
+#import "@preview/merman:0.2.0": *
 
 == From Mechanistic Models to Self-Learning Experimental Systems: A Bayesian Framework for Scientific Process Optimization
 <from-mechanistic-models-to-self-learning-experimental-systems-a-bayesian-framework-for-scientific-process-optimization>
@@ -1072,3 +1072,4 @@ let me know:
 
 I can help write the core Python code for the sensitivity equations,
 configure your MCMC sampler, or build the acquisition loop.
+
