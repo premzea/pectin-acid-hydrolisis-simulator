@@ -89,7 +89,7 @@ The extraction is modeled as a 4-pool cascading mass transfer system. The cascad
 ]
 
 == Kinetic Equations (Mass & Moments)
-The state equations combine strict normalized mass conservation [$#text("kg/kg")_{"dry,feed"}$] with mass-weighted moments to track intensive properties ($M_w, DE$) dynamically.
+The state equations combine strict normalized mass conservation [$#text("kg/kg")_{"dry,feed"}$] with mass-weighted moments to track intensive properties ($M_w, D E$) dynamically.
 $ (d P_{"sol"}) / (d t) &= k_{"ext"} P_{"matrix"} - k_{"hyd"} P_{"sol"} $
 $ (d P_{"lowMW"}) / (d t) &= k_{"hyd"} P_{"sol"} - k_{"deg"} P_{"lowMW"} $
 
@@ -104,25 +104,25 @@ By computing the Fisher Information Matrix (FIM) over the 9-dimensional paramete
 The OED analysis strongly favors time-resolved observation, particularly at early and intermediate residence times, to break the $k_{"hyd"} <-> k_{"deg"}$ correlation. It pushes the boundary conditions of the operating space (e.g., $95^circ$C/pH 1.5 vs $50^circ$C/pH 3.0). For the final 10-run protocol utilizing 4-point time-resolved tracking, the selected protocol substantially improves the conditioning of the inverse problem, eliminating near-null sensitivity directions and achieving a condition number of $kappa approx 27.0$.
 
 = Hierarchical Measurement Architecture
-The time-resolved OED campaign requires 6 samples per run. Performing conventional SEC-MALLS (for $M_w$), Titration (for $DE$), and mHDP Colorimetry (for GalA purity) on every aliquot is economically unviable. 
+The time-resolved OED campaign requires 6 samples per run. Performing conventional SEC-MALLS (for $M_w$), Titration (for $D E$), and mHDP Colorimetry (for GalA purity) on every aliquot is economically unviable. 
 
 We solve this using a Bayesian Proxy Measurement Model. The physical experiment is segmented into a preparation layer and an observation layer.
 
 == The Preparation Model & Precipitation Bias
 Direct measurement of raw reactor liquor is strongly confounded by the extraction matrix (unreacted acid, trace metal ions, simple sugars) and is therefore not the preferred basis for routine proxy measurements. All proxy samples undergo **Standardized Alcohol Precipitation**. 
 
-This is not a neutral step. Ethanol fractionation can selectively recover high-$M_w$ pectin while leaving low-$M_w$ fragments in solution. We model this recovery bias as $\eta_{"precipitation"} = f(M_w, DE)$. The proxy must be calibrated on the exact same precipitated material to absorb this physical bias natively.
+This is not a neutral step. Ethanol fractionation can selectively recover high-$M_w$ pectin while leaving low-$M_w$ fragments in solution. We model this recovery bias as $\eta_{"precipitation"} = f(M_w, D E)$. The proxy must be calibrated on the exact same precipitated material to absorb this physical bias natively.
 
 == The Proxy Observation Model
 We deploy two ultra-fast, low-cost sensors on the standardized precipitate:
-1. *FTIR/DRIFTS Spectroscopy*: A chemometric PLS model maps the full mid-IR spectrum to $DE$ and GalA fraction.
+1. *FTIR/DRIFTS Spectroscopy*: A chemometric PLS model maps the full mid-IR spectrum to $D E$ and GalA fraction.
 2. *Capillary Viscometry*: The flow time ($t_{"flow"}$) at a strictly recorded concentration ($C_{"pellet"}$) provides a low-cost MW proxy calibrated directly against HPSEC-MALLS on the same passion-fruit pectin material, avoiding reliance on universal Mark-Houwink constants.
 
 == Bayesian Integration
 The measurement hierarchy resolves into a clean Directed Acyclic Graph (DAG):
 $ text("Kinetic ODE") arrow.r y_{"true"} arrow.r y_{"prepared"} arrow.r z_{"observed"} $
 
-Where $y = (Y, DE, M_w, X_{"GalA"})$ and $z = (text("FTIR"), t_{"flow"}, C_{"ppt"}, C_{"pellet"})$.
+Where $y = (Y, D E, M_w, X_{"GalA"})$ and $z = (text("FTIR"), t_{"flow"}, C_{"ppt"}, C_{"pellet"})$.
 Then the posterior over kinetic parameters is obtained by marginalizing the latent physicochemical state:
 $ p(theta mid z, x) prop p(theta) integral p(z mid y) p(y mid theta, x) d y $
 
