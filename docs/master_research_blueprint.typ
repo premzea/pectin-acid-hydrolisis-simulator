@@ -43,6 +43,8 @@
 = Executive Summary
 This document synthesizes the complete research architecture for building a digital twin of passion-fruit pectin extraction. The architecture bridges a strict mechanistic kinetic model with a Bayesian Optimal Experimental Design (OED) framework. To solve the fundamental bottleneck of expensive laboratory analytics, the system employs a hierarchical proxy measurement model, allowing dense time-series data collection using cost-effective chemometric and rheological sensors.
 
+To provide a clear distinction between what has been mathematically proven and what remains to be physically tested, this blueprint is divided into two distinct phases: **Part I** covers the preliminary computational results (model derivation, identifiability, and OED) generated via synthetic data simulation. **Part II** outlines the proposed physical execution and laboratory architecture required to deploy the system in reality.
+
 The sequence of this research project is explicitly defined as:
 $
 text("Mechanistic Model") 
@@ -92,6 +94,14 @@ The deepest abstraction of this system is not "use ML to optimize a reactor." It
   Build a mechanistic model, quantify what you don't know, design the cheapest experiments that maximally reduce that uncertainty, use inexpensive measurements wherever possible through calibrated observation models, and close the loop by updating the model and selecting the next experiment.
 ]
 
+#v(2em)
+#align(center)[
+  #rect(fill: rgb("f8f9fa"), stroke: luma(150), radius: 4pt, inset: 12pt, width: 100%)[
+    #text(size: 14pt, weight: "bold")[PART I: PRELIMINARY COMPUTATIONAL RESULTS] \
+    #text(style: "italic")[Derived exclusively from numerical simulations and synthetic data]
+  ]
+]
+#v(1em)
 = Mechanistic Reactor Model (V1.3)
 == Compartmental Cascade
 The extraction is modeled as a 4-pool cascading mass transfer system. The cascade structure forces a critical structural tradeoff between extraction speed and product degradation.
@@ -158,7 +168,7 @@ To avoid mathematical ambiguity, all parameters are strictly assigned an ontolog
 The serial cascade induces a severe identifiability problem: a fast extraction/fast degradation trajectory looks mathematically identical to a slow extraction/slow degradation trajectory if observed only at the process endpoint.
 
 == Bayesian Optimal Experimental Design (OED)
-By computing the Fisher Information Matrix (FIM) over the 9-dimensional parameter space, we designed an exact 10-run protocol that minimizes the determinant of the posterior covariance matrix (D-optimal design). 
+By computing the Fisher Information Matrix (FIM) over the 9-dimensional parameter space using synthetic data simulations, we designed an exact 10-run protocol that minimizes the determinant of the posterior covariance matrix (D-optimal design). 
 
 The OED analysis strongly favors time-resolved observation, particularly at early and intermediate residence times, to break the $k_{"hyd"} <-> k_{"deg"}$ correlation. It pushes the boundary conditions of the operating space (e.g., 95 °C/pH 1.5 vs 50 °C/pH 3.0). For the final 10-run protocol utilizing 4-point time-resolved tracking, the selected protocol substantially improves the conditioning of the inverse problem, eliminating near-null sensitivity directions and achieving a condition number of $kappa approx 27.0$.
 
@@ -181,6 +191,14 @@ The explicit 10-run protocol defined by the solver is as follows (distribute acr
 )
 ]
 
+#v(2em)
+#align(center)[
+  #rect(fill: rgb("f8f9fa"), stroke: luma(150), radius: 4pt, inset: 12pt, width: 100%)[
+    #text(size: 14pt, weight: "bold")[PART II: PROPOSED PHYSICAL EXECUTION] \
+    #text(style: "italic")[Experimental protocols pending physical laboratory execution]
+  ]
+]
+#v(1em)
 = Hierarchical Measurement Architecture
 The time-resolved OED campaign requires 6 samples per run. Performing conventional SEC-MALLS (for $M_w$), Titration (for $D E$), and mHDP Colorimetry (for GalA purity) on every aliquot is economically unviable. 
 
@@ -301,4 +319,5 @@ By mathematically integrating over the latent state $y$, the inference engine co
 Because the integral in the denominator of Bayes' theorem is intractable for a non-linear ODE system, the posterior distribution cannot be calculated analytically. 
 
 Instead, we use **Markov Chain Monte Carlo (MCMC)** algorithms (specifically Hamiltonian Monte Carlo / NUTS). These algorithms act as intelligent "walkers" that explore the 9-dimensional parameter space, spending more time in regions where the Prior and Likelihood are high. The resulting trail of samples provides a direct numerical representation of the posterior distribution, entirely bypassing the need for analytical integration.
+
 
