@@ -110,10 +110,10 @@ To avoid mathematical ambiguity, all parameters are strictly assigned an ontolog
   [$t$], [Extraction Time], [min], [5 -- 120 min], [Controlled Process Variable],
   [$d_{50}$], [Particle Size], [μm], [149 -- 600 μm], [Measured State],
   [$M_{w,"matrix"}$], [MW of matrix pectin], [Da], [$6.54 times 10^5$], [Informative Prior],
-  [$k_{i,"ref"}$], [Reference Rates], [$\text{min}^{-1}$], [TBD], [Calibrated],
+  [$k_{i,"ref"}$], [Reference Rates], [$"min"^{-1}$], [TBD], [Calibrated],
   [$E_{i}$], [Activation Energies], [J/mol], [TBD], [Calibrated],
   [$n_{i}$], [Acidity Orders], [-], [1.0], [Fixed V1],
-  [$\alpha$], [Particle Size Scaling], [-], [0.5 -- 2.0], [Calibrated]
+  [$alpha$], [Particle Size Scaling], [-], [0.5 -- 2.0], [Calibrated]
 )
 ]
 
@@ -181,7 +181,7 @@ Because time points within a single run are autocorrelated, standard cross-valid
 1. *RMSEP*: Must be $< 5\%$ absolute for $D E$/GalA, and $< 50$ kDa for $M_w$.
 2. *Stratified RMSEP*: The proxy must not fail catastrophically at extremes (e.g., reported separately for low/med/high ranges).
 3. *MAE & Bias*: Residuals must be centered at zero.
-4. *Uncertainty Coverage*: The proxy's 95% CI must contain the true reference value 95% of the time on unseen runs ($P(y_{"true"} \in C I_{95\%,"proxy"})$).
+4. *Uncertainty Coverage*: The proxy's 95% CI must contain the true reference value 95% of the time on unseen runs ($P(y_{"true"} in C I_{95\%,"proxy"})$).
 
 == Bayesian Integration
 The measurement hierarchy resolves into a clean Directed Acyclic Graph (DAG):
