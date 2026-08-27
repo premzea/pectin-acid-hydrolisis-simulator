@@ -7,8 +7,8 @@ Because the Proxy Observation ($\mathbf{z}$) and the Reference Assay ($\mathbf{y
 
 | Column | Type | Units | Description / Origin |
 |:---|:---|:---|:---|
-| `sample_id` | String | - | Unique identifier matching the `run_sheet.csv` (e.g., `C1_10m`) |
-| `run_id` | String | - | Identifying the reactor trajectory (e.g., `C1`) |
+| `sample_id` | String | - | Unique physical identifier (e.g., `B002-R07-S03`) |
+| `run_id` | String | - | Identifying the reactor trajectory (e.g., `B002-R07`) |
 | `aliquot_time_min` | Float | min | Exact quench time |
 | `m_liquor` | Float | g | Exact mass of liquor withdrawn (Target: 20.0 g) |
 | `m_dry_pellet` | Float | g | Exact mass of the dried AIR pellet |

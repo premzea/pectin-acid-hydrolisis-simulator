@@ -1,44 +1,47 @@
-# Minimum Viable Laboratory (MVP) Configuration
+# Minimum Viable Laboratory (MVP) Configuration & Procurement Strategy
 
 The Bayesian proxy architecture shifts the bottleneck of pectin optimization from capital-intensive analytical hardware to **analytical discipline and traceability**. By relying on probabilistic measurement models, we can cleanly divide the physical program into an inexpensive in-house operation and outsourced ground-truth anchoring.
 
-## 1. Capital Strategy: In-House vs. Outsourced
+## 1. Capital Strategy: In-House vs. University vs. Outsourced
 
-### In-House Capability (High-Frequency / Proxy)
-$$ \text{Reactor} + \text{Sensors} + \text{Precipitation/Drying} + \text{ATR-FTIR} + \text{Capillary Viscometry} + \text{UV-Vis/Titration} $$
+By leveraging university core facilities for spectral and chromatographic capabilities, the required in-house capital expenditure is remarkably lean.
 
-### Outsourced Capability (Low-Frequency / Calibration Anchor)
-$$ \text{HPSEC-MALLS} $$
-*(Selected samples from the Proxy Calibration phase are mailed to a university core facility. Routine runs require zero in-house SEC capability).*
+### Own / Operate (In-House)
+$$ \text{1-2 L Reactor} + \text{Sensors} + \text{Precipitation} + \text{Calibrated Balance} + \text{Capillary Viscosity} + \text{UV-Vis/Titration} $$
+
+### University / Core Facility Access
+$$ \text{ATR-FTIR} + \text{HPSEC-MALLS} $$
+*(Acquiring sustained core-facility access for ATR-FTIR is the single largest capital-saving opportunity. Purchase an in-house FTIR only if sustained access cannot be secured).*
 
 ---
 
-## 2. Minimum Viable Equipment List
+## 2. Procurement & Access Checklist
 
-| Capability | Minimum Equipment | Rationale | Frequency |
+| Capability | Minimum Equipment | Sourcing Strategy | Rationale |
 |:---|:---|:---|:---|
-| **Controlled Extraction** | 0.5–2 L jacketed glass reactor, overhead stirring | Allows repeatable execution of the OED boundary conditions (T, pH, time). | Every run |
-| **Temperature Logging** | RTD/thermocouple + continuous data logger | The kinetic integration $\int k(T)\,dt$ requires exact $T(t)$ history, not just the nominal setpoint. | Continuous |
-| **Acidity Control** | Lab pH meter + appropriate probe | Essential for extraction acidity control and tracking. | Every run |
-| **Sampling & Quenching** | Syringe/port, pre-chilled tubes, ice bath | Ensures extraction is frozen at the precise timestamp ($t_{aliquot}$). | Every sample |
-| **Standardized Prep** | Bench centrifuge, ethanol, drying oven, analytical balance | Required to execute the rapid precipitation standard, eliminating liquor matrix confounders. | Every sample |
-| **Proxy 1: Chemical** | **ATR-FTIR** Spectrometer | Generates the spectra for the DE and GalA chemometric predictions. ATR is operationally simpler than DRIFTS. | Most samples |
-| **Proxy 2: Molecular** | Capillary Viscometer + water bath | Generates the flow time ($t_{flow}$) proxy for $M_w$. | Most samples |
-| **Anchor 1: GalA** | UV-Vis Spectrophotometer | Ground truth for the mHDP colorimetric GalA assay. | Calibration subset |
-| **Anchor 2: DE** | Basic Titration Setup | Ground truth for DE. | Calibration subset |
+| **Controlled Extraction** | 1.0–2.0 L jacketed glass reactor, overhead stirring | **Own** | Preferred over 0.5 L, as withdrawing six 20 mL aliquots (120 mL total) will significantly alter the S:L ratio of smaller vessels. |
+| **Temperature Logging** | RTD/thermocouple + continuous data logger | **Own** | Kinetic integration requires exact $T(t)$ history. |
+| **Acidity Control** | Lab pH meter + appropriate probe | **Own** | Essential for extraction acidity control. |
+| **Mass Tracking** | Calibrated Analytical Balance | **Own** | **Critical Instrument**: Errors in $m_{feed}$ or $m_{pellet}$ propagate directly into the Bayesian likelihood via the $C_{ppt}$ proxy. Consistency matters more than extreme precision. |
+| **Sampling & Quenching** | Port/syringe, pre-chilled tubes, ice bath | **Own** | Ensures extraction is frozen at the precise timestamp ($t_{aliquot}$). |
+| **Standardized Prep** | Bench centrifuge, ethanol, vacuum/drying oven | **Own** | Required to execute rapid precipitation. |
+| **Proxy 1: Molecular** | Capillary Viscometer + water bath | **Own** | Inexpensive candidate proxy for $M_w$. |
+| **Proxy 2: Chemical** | **ATR-FTIR** Spectrometer | **University** | Generates DE and GalA chemometric predictions. |
+| **Anchor 1: GalA/DE** | UV-Vis Spectrophotometer, Titration glassware | **Own** | Ground truth anchors; cheap enough to own. |
+| **Anchor 2: MW** | HPSEC-MALLS | **Outsource / Univ.** | Send the Phase 1 proxy calibration pellets out. |
 
-## 3. Anti-Requirements (Do Not Buy)
+## 3. Anti-Requirements (Do Not Buy Initially)
 For Phase 1 and the initial Digital Twin calibration, capital should **not** be deployed on:
-* Automated robotic liquid handling
-* Inline FTIR (the standardized precipitation step requires offline testing anyway)
-* Sophisticated rheometers (capillary viscometry is sufficient)
-* In-house SEC-MALLS ($100k+ capital cost)
-* Custom automated process-control systems
+* **Sophisticated Rheometers**: Defer unless Phase 1 shows that capillary viscometry cannot meet the MW-proxy acceptance criteria.
+* **In-house ATR-FTIR / SEC-MALLS**: Defer unless core-facility access is impossible.
+* Automated robotic liquid handling, inline FTIR, or custom automated process-control systems.
 
 ## 4. The Hidden Capability: Analytical Discipline
 The most expensive hardware cannot save a poorly tracked sample. The digital twin requires rigorous relational data tracking mapping every physical aliquot back to its exact thermodynamic history.
 
-For every single sample, the following must travel unbroken through the laboratory:
-$$ \text{Batch ID} + \text{Run ID} + t_{aliquot} + T(t) + pH(t) + m_{liquor} + m_{pellet} $$
+The primary key for all data must be the unique **Sample ID**. For example: `B002-R07-S03` uniquely identifies Batch 2, Run 7, Sample 3.
 
-This strict traceability is formalized in the `proxy_data_schema.md` artifact. If this chain is broken (e.g., exact quench time is not recorded, or the sample is not mapped to the continuous $T(t)$ log), the sample is mathematically useless to the Bayesian inference engine.
+For every single sample, this ID must link to the exact process metadata:
+$$ \text{SampleID} \rightarrow t_{aliquot} + T(t) + pH(t) + m_{liquor} + m_{pellet} $$
+
+This strict traceability is formalized in the `proxy_data_schema.md` artifact. If this chain is broken (e.g., exact quench time is not recorded), the sample may no longer be suitable for kinetic inference because its process history cannot be assigned reliably.
