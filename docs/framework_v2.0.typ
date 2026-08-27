@@ -1,4 +1,4 @@
-#import "@preview/merman:0.2.0": *
+
 
 = Closed-Loop Scientific Engineering: A Bayesian Framework for Physical Biochemical Processes
 
@@ -17,58 +17,7 @@ The central thesis of this framework is that *complex biochemical processes shou
 Rather than relying purely on black-box optimization (which ignores physics) or rigid first-principles simulation (which ignores data and discrepancy), a robust scientific engineering approach synthesizes the two. We achieve this by structuring the problem around five core capabilities: Represent, Understand, Learn, Decide, and Execute.
 
 #align(center)[
-  #mermaid(
-```
-graph TD
-    K[SCIENTIFIC KNOWLEDGE<br>Physics • Chemistry<br>Biology • Priors] --> R
-
-    subgraph R[REPRESENT]
-        R1[Process model]
-        R2[Measurement model]
-        R3[Constraints]
-        R4[Discrepancy]
-        R5[Surrogates]
-    end
-    
-    R --> U
-
-    subgraph U[UNDERSTAND]
-        U1[Validation]
-        U2[Identifiability]
-        U3[Model criticism]
-        U4[Uncertainty]
-    end
-
-    U --> L
-
-    subgraph L[LEARN]
-        L1[Bayesian inference]
-        L2[State estimation]
-        L3[Proxy inference]
-        L4[Model updating]
-    end
-
-    L --> D
-
-    subgraph D[DECIDE]
-        D1[Learn? → OED]
-        D2[Do? → Optimization]
-        D3[Control? → Policy]
-    end
-
-    D --> E
-
-    subgraph E[EXECUTE]
-        E1[Experiment compiler]
-        E2[Automation]
-        E3[Sensors / actuators]
-        E4[Safety]
-    end
-
-    E --> P[PHYSICAL SYSTEM]
-    P -- observations --> R
-```
-  )
+  #image("assets/rulde_loop.png", width: 100%)
 ]
 
 ---
