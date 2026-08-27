@@ -1059,41 +1059,39 @@ these steps autonomously:
 
 == 11. Methodological Mapping
 <methodological-mapping>
-To apply this architecture to other domains, one must clearly separate
-the generic mathematical framework from the domain-specific parameters
-of the pectin application.
+To apply this architecture to other domains, one must clearly separate the generic mathematical framework from the domain-specific parameters of the pectin application.
 
 #mermaid(
-  ```
-  graph LR
-    subgraph Generic Methodology Backbone
-      direction TB
-      A[Conservation Invariant ODEs]
-      B[Logarithmic Sensitivity Matrix & SVD]
-      C[D-Optimality Criterion Max]
-      D[Bayesian MCMC Posterior Sampling]
-      E[Proxy Calibration & Noise Budgeting]
-      F[Kennedy-O'Hagan Discrepancy Capture]
-      G[Bayesian GP Optimization UCB/EI]
-    end
-    subgraph Pectin Case Study Domain Specific
-      direction TB
-      A2[4-Pool Carbohydrate Mass Fractions]
-      B2[Arrhenius Frequency & Activation Energy]
-      C2[Dynamic Sample Extraction Times]
-      D2[Prior Estimates from Polysaccharide Lit]
-      E2[FTIR Absorbance Fingerprints for Yield]
-      F2[Correcting for Imperfect Reactor Mixing]
-      G2[Maximizing High-MW Pectin Yield]
-    end
-    A -.-> A2
-    B -.-> B2
-    C -.-> C2
-    D -.-> D2
-    E -.-> E2
-    F -.-> F2
-    G -.-> G2
-  ```,
+```
+graph LR
+  subgraph Generic["Generic Methodology Backbone"]
+    direction TB
+    A["Conservation Invariant<br/>ODEs"]
+    B["Logarithmic Sensitivity<br/>Matrix & SVD"]
+    C["D-Optimality Criterion<br/>Maximization"]
+    D["Bayesian MCMC<br/>Posterior Sampling"]
+    E["Proxy Calibration &<br/>Noise Budgeting"]
+    F["Kennedy-O'Hagan<br/>Discrepancy Capture"]
+    G["Bayesian GP Optimization<br/>(UCB / EI)"]
+  end
+  subgraph Specific["Pectin Case Study (Domain-Specific)"]
+    direction TB
+    A2["4-Pool Carbohydrate<br/>Mass Fractions"]
+    B2["Arrhenius Frequency &<br/>Activation Energy"]
+    C2["Dynamic Sample<br/>Extraction Times"]
+    D2["Prior Estimates from<br/>Polysaccharide Literature"]
+    E2["FTIR Absorbance<br/>Fingerprints for Yield"]
+    F2["Correcting for Imperfect<br/>Reactor Mixing"]
+    G2["Maximizing High-MW<br/>Pectin Yield"]
+  end
+  A -.-> A2
+  B -.-> B2
+  C -.-> C2
+  D -.-> D2
+  E -.-> E2
+  F -.-> F2
+  G -.-> G2
+```
 )
 
 The core mathematical architecture of this self-learning system is
@@ -1133,5 +1131,4 @@ let me know:
 
 I can help write the core Python code for the sensitivity equations,
 configure your MCMC sampler, or build the acquisition loop.
-
 
