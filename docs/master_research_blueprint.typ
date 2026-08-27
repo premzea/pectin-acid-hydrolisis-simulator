@@ -96,6 +96,27 @@ $ (d P_{"lowMW"}) / (d t) &= k_{"hyd"} P_{"sol"} - k_{"deg"} P_{"lowMW"} $
 
 Kinetics are parameterized via an Arrhenius reference-state formulation ($T_{"ref"} = 353.15$ K, $p H_{"ref"} = 2.0$) to dramatically improve the numerical conditioning of the Bayesian inference.
 
+== Parameter Ontology
+To avoid mathematical ambiguity, all parameters are strictly assigned an ontology classification.
+
+#align(center)[
+#table(
+  columns: (auto, auto, auto, auto, auto),
+  align: (center, left, center, center, center),
+  
+  [*Symbol*], [*Meaning*], [*Units*], [*V1 Range*], [*Classification*],
+  [$T$], [Extraction Temperature], [°C], [45 -- 100 °C], [Controlled Process Variable],
+  [$p H$], [Kinetic Acidity], [pH], [1.2 -- 4.5], [Controlled Process Variable],
+  [$t$], [Extraction Time], [min], [5 -- 120 min], [Controlled Process Variable],
+  [$d_{50}$], [Particle Size], [μm], [149 -- 600 μm], [Measured State],
+  [$M_{w,"matrix"}$], [MW of matrix pectin], [Da], [$6.54 \times 10^5$], [Informative Prior],
+  [$k_{i,"ref"}$], [Reference Rates], [$\text{min}^{-1}$], [TBD], [Calibrated],
+  [$E_{i}$], [Activation Energies], [J/mol], [TBD], [Calibrated],
+  [$n_{i}$], [Acidity Orders], [-], [1.0], [Fixed V1],
+  [$\alpha$], [Particle Size Scaling], [-], [0.5 -- 2.0], [Calibrated]
+)
+]
+
 = Structural Identifiability & OED
 The serial cascade induces a severe identifiability problem: a fast extraction/fast degradation trajectory looks mathematically identical to a slow extraction/slow degradation trajectory if observed only at the process endpoint.
 
@@ -103,6 +124,25 @@ The serial cascade induces a severe identifiability problem: a fast extraction/f
 By computing the Fisher Information Matrix (FIM) over the 9-dimensional parameter space, we designed an exact 10-run protocol that minimizes the determinant of the posterior covariance matrix (D-optimal design). 
 
 The OED analysis strongly favors time-resolved observation, particularly at early and intermediate residence times, to break the $k_{"hyd"} <-> k_{"deg"}$ correlation. It pushes the boundary conditions of the operating space (e.g., 95 °C/pH 1.5 vs 50 °C/pH 3.0). For the final 10-run protocol utilizing 4-point time-resolved tracking, the selected protocol substantially improves the conditioning of the inverse problem, eliminating near-null sensitivity directions and achieving a condition number of $kappa approx 27.0$.
+
+The explicit 10-run protocol defined by the solver is as follows (distribute across 2 baseline feedstock batches):
+#align(center)[
+#table(
+  columns: (auto, auto, auto, auto, auto),
+  align: (center, center, center, center, left),
+  [*Run*], [*T (°C)*], [*pH*], [*$d_{50}$ (μm)*], [*Sample Times (min)*],
+  [1], [95], [1.5], [600], [15, 45, 90, 120],
+  [2], [50], [1.5], [150], [15, 45, 90, 120],
+  [3], [95], [2.5], [150], [15, 45, 90, 120],
+  [4], [50], [1.5], [600], [15, 45, 90, 120],
+  [5], [95], [2.0], [600], [15, 45, 90, 120],
+  [6], [50], [2.0], [150], [15, 45, 90, 120],
+  [7], [95], [2.5], [600], [15, 45, 90, 120],
+  [8], [50], [1.5], [300], [15, 45, 90, 120],
+  [9], [95], [3.0], [150], [15, 45, 90, 120],
+  [10], [95], [2.0], [300], [15, 45, 90, 120]
+)
+]
 
 = Hierarchical Measurement Architecture
 The time-resolved OED campaign requires 6 samples per run. Performing conventional SEC-MALLS (for $M_w$), Titration (for $D E$), and mHDP Colorimetry (for GalA purity) on every aliquot is economically unviable. 
@@ -118,6 +158,30 @@ This is not a neutral step. Ethanol fractionation can selectively recover high-$
 We deploy two ultra-fast, low-cost sensors on the standardized precipitate:
 1. *FTIR/DRIFTS Spectroscopy*: A chemometric PLS model maps the full mid-IR spectrum to $D E$ and GalA fraction.
 2. *Capillary Viscometry*: The flow time ($t_{"flow"}$) at a strictly recorded concentration ($C_{"pellet"}$) provides a low-cost MW proxy calibrated directly against HPSEC-MALLS on the same passion-fruit pectin material, avoiding reliance on universal Mark-Houwink constants.
+
+== Proxy Calibration & Acceptance Criteria
+To ensure the proxy models generalize, the calibration samples must span the entire operating space. We execute 5 dedicated reactor runs, taking 6 time-resolved aliquots per run (Total $N = 30$).
+
+#align(center)[
+#table(
+  columns: (auto, auto, auto, auto, auto, auto),
+  align: (center, center, center, center, left, left),
+  [*Run*], [*T (°C)*], [*pH*], [*$d_{50}$ (μm)*], [*Targeted Domain*], [*Expected State*],
+  [C1], [50], [3.0], [600], [Absolute Min Severity], [High $M_w$, High $D E$],
+  [C2], [95], [1.5], [150], [Absolute Max (Stress)], [Low $M_w$, Low $D E$],
+  [C3], [75], [2.2], [300], [Interior Trajectory], [Moderate $M_w$, Mod $D E$],
+  [C4], [95], [3.0], [300], [High T / Low Acid], [Moderate $M_w$, High $D E$],
+  [C5], [50], [1.5], [150], [Low T / High Acid], [High $M_w$, Low $D E$]
+)
+]
+*Sampling Schedule*: Withdrawn at $t = 10, 25, 45, 70, 95, 120$ minutes.
+
+Because time points within a single run are autocorrelated, standard cross-validation will overfit. We mandate **Leave-One-Run-Out (LORO) Cross-Validation**. 
+*Acceptance Metrics*:
+1. *RMSEP*: Must be $< 5\%$ absolute for $D E$/GalA, and $< 50$ kDa for $M_w$.
+2. *Stratified RMSEP*: The proxy must not fail catastrophically at extremes (e.g., reported separately for low/med/high ranges).
+3. *MAE & Bias*: Residuals must be centered at zero.
+4. *Uncertainty Coverage*: The proxy's 95% CI must contain the true reference value 95% of the time on unseen runs ($P(y_{"true"} \in C I_{95\%,"proxy"})$).
 
 == Bayesian Integration
 The measurement hierarchy resolves into a clean Directed Acyclic Graph (DAG):
