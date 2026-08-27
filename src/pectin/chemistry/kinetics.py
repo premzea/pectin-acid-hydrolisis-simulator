@@ -63,7 +63,9 @@ def calculate_rate_constants(
     
     # Temperature and pH modifier components
     def arrhenius_ref(k_ref, Ea, n):
-        T_term = np.exp(-Ea / R * (1/T_kelvin - 1/T_ref))
+        # Modified Arrhenius: k_ref * exp(-Ea/R * (1/T - 1/T_ref))
+        arrhenius_arg = -Ea / R * (1.0 / T_kelvin - 1.0 / T_ref)
+        T_term = np.exp(np.clip(arrhenius_arg, -50.0, 50.0))
         pH_term = 10**(n * (pH_ref - pH))
         return k_ref * T_term * pH_term
     
