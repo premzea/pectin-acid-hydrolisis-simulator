@@ -351,9 +351,8 @@ These analytical techniques require extensive preparation, take hours to complet
 To accelerate the loop, we introduce proxy measurements: cheap, non-destructive, instantaneous indicators that can be monitored continuously online (e.g., Fourier-Transform Infrared Spectroscopy (FTIR), Total Soluble Solids via Refractive Index ($^\circ\text{Brix}$), online fluid density, or simple medium $\text{pH}$).
 ```mermaid
 graph LR
-  A[TRUE METRIC: High-MW Pectin Pool] -.->|Calibration| B[PROXY INDICATOR: FTIR Spectrum Absorbance]
+  A["TRUE METRIC<br/>High-MW Pectin Pool<br/>(Slow, Expensive)"] <-->|"Calibration<br/>Model"| B["PROXY INDICATOR<br/>FTIR Spectrum Absorbance<br/>(Fast, Inexpensive)"]
 ```
-                              Model
 ## Mathematical Calibration Mappings
 We establish a mathematical calibration model (such as Partial Least Squares Regression [PLS] or a Gaussian Process) to infer the true state vector $\mathbf{w}$ from the raw proxy spectra or sensor arrays $\mathbf{z}$:
 $$

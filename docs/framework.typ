@@ -826,10 +826,10 @@ Solids via Refractive Index ($""^compose upright("Brix")$), online fluid
 density, or simple medium $upright("pH")$).
 
 #mermaid(
-  ```
-  graph LR
-    A[TRUE METRIC: High-MW Pectin Pool] -.->|Calibration| B[PROXY INDICATOR: FTIR Spectrum Absorbance]
-  ```,
+```
+graph LR
+  A["TRUE METRIC<br/>High-MW Pectin Pool<br/>(Slow, Expensive)"] <-->|"Calibration<br/>Model"| B["PROXY INDICATOR<br/>FTIR Spectrum Absorbance<br/>(Fast, Inexpensive)"]
+```
 )
 
 
