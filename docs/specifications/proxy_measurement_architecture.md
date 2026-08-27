@@ -20,21 +20,22 @@ Let $\mathbf{y} = [Y_p, DE, M_w]^T$ be the true expensive properties, and $\math
 3. **Kinetic Integration**: That proxy uncertainty ($\sigma_{proxy}$) naturally propagates into the digital twin's kinetic posterior $p(\theta \mid D)$. This allows us to ingest 10x-100x more time-series data without discarding the uncertainty of the cheap measurement.
 
 ## 3. Proxy Candidates & Standardization
-Because polymer rheology is heavily confounded by the immediate solvent environment (pH, ionic strength, Ca$^{2+}$, sugar), **direct liquor testing is invalid**. Samples must undergo a rapid *Standardized Formulation* (e.g., buffering to pH 3.0, fixed dilution) before physical testing.
+Because polymer rheology and spectral properties are heavily confounded by the immediate solvent environment (water, unreacted acid, co-extracted simple sugars), **direct liquor testing is invalid**. Samples must undergo a rapid *Standardized Precipitation* (e.g., rapid ethanol wash and drying) before proxy testing to isolate the pectin polymer.
 
-### Tier 1: Concentration/Yield Proxies ($z_{yield}$)
-*Goal: Isolate polymer mass from structural properties.*
-* **Optical Density / Turbidity** (post-standardized precipitation)
-* **Dried mass of standardized rapid-precipitate** (less rigorous than full AIR)
+### The `FTIR + Viscosity` Stack
+Based on literature feasibility, the project targets a highly compact, two-instrument measurement stack for routine aliquots:
 
-### Tier 2: Molecular Property Proxies ($z_{mol}$)
-*Goal: Isolate $M_w$ and concentration effects.*
-* **Capillary Viscometry / Flow Time** ($\eta$): Highly sensitive to chain entanglement ($M_w$) and concentration. 
-* **Standardized Deformation / Collapse Time** ($t_{collapse}$): A reproducible geometric failure test under fixed standard formulation.
+1. **FTIR / DRIFTS** (Chemical Properties)
+   * **Targets**: $DE$ and $X_{GalA}$
+   * **Rationale**: Strong literature precedent demonstrating rapid, non-destructive prediction of DE (1-3% error) and GalA content from the carbonyl absorption bands.
+   * **Execution**: Performed directly on the dried standardized precipitate.
 
-### Tier 3: Chemical Property Proxies ($z_{chem}$)
-*Goal: Isolate $DE$ (and GalA).*
-* **FTIR Spectroscopy**: Can be calibrated against titration DE. (Higher capital cost, but zero marginal cost per sample).
+2. **Capillary / Simple Viscosity** (Molecular Properties)
+   * **Targets**: $M_w$
+   * **Rationale**: The Mark-Houwink equation mathematically links intrinsic viscosity to molecular weight. Empirical viscosity measurements at standardized concentrations are well-documented proxies for pectin $M_w$.
+   * **Execution**: The precipitate is dissolved in a standard buffer at a fixed concentration ($C_p$) prior to flow testing.
+
+*(Note: NIR for bulk yield and standardized gel-collapse tests for functional quality were evaluated but relegated to secondary status due to severe matrix dependencies and multidimensional confounding, respectively).*
 
 ## 4. Proxy Discovery Campaign (Milestone 6a)
 Before designing the full 14-run reactor campaign, we must discover and validate which proxies have the highest **Value**:
