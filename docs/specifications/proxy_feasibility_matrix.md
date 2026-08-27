@@ -1,36 +1,35 @@
 # Proxy Feasibility Matrix
 
-This document evaluates the literature-supported empirical measurements proposed to replace expensive physicochemical assays (SEC-MALLS, Titration, Carbazole) for routine time-resolved reactor aliquots. 
+This document evaluates the literature-supported empirical measurements proposed to augment or replace expensive physicochemical assays (SEC-MALLS, Titration). 
 
-The goal is to select a compact, high-value measurement stack where the Bayesian model propagates proxy uncertainty ($\sigma_{proxy}$) into the kinetic posterior.
+The goal is to select a high-value measurement stack where the Bayesian model propagates proxy uncertainty ($\sigma_{proxy}$) into the kinetic posterior, noting that **these are candidate proxies requiring passion-fruit-specific paired calibration**, not universally accurate constants.
 
 ## 1. Evaluation Matrix
 
-| Candidate Proxy | Target Property | Sample Prep Required | Equipment Cost | Per-Sample Time | Expected $\sigma_{proxy}$ | Confounding Variables |
-|:---|:---|:---|:---|:---|:---|:---|
-| **Simple / Capillary Viscosity** | Molecular Weight ($M_w$) | **Standardized Precipitate**. Must be isolated from liquor, dried, and re-dissolved at fixed concentration ($C_p$), pH, and ionic strength. | Low (Capillary viscometer / basic rheometer) | 15–30 min | Moderate (relies on Mark-Houwink constants) | Concentration (must be exact), DE, degree of branching, trace ions |
-| **FTIR / DRIFTS** | Degree of Esterification ($DE$) | **Standardized Precipitate (Dried)**. Water absorption overwhelms IR; must dry the AIR pellet. | Medium (FTIR Spectrometer) | < 5 min | 1–3% absolute | Residual moisture, baseline shifts, physical particle size (for DRIFTS) |
-| **FTIR / DRIFTS** | Galacturonic Acid ($X_{GalA}$) | Same as above (analyzed simultaneously from same spectrum) | Medium (FTIR) | < 5 min (simultaneous) | Low-Moderate ($R^2 \approx 0.98$ reported) | Overlapping vibrational bands from co-extracted neutral sugars |
-| **NIR Spectroscopy** | Pectin Yield / Content | **Direct Liquor** or precipitate | Medium-High (NIR) | < 2 min | High (screening quality, $R^2 \approx 0.63$) | Massive matrix effects (water, soluble sugars, pH, temperature) |
-| **Standardized Gel/Collapse Test** | Functional Quality (combines $Y$, $DE$, $M_w$) | **Standardized Formulation**. Must isolate pectin, add fixed sucrose/acid/Ca$^{2+}$, and cool under strict profile. | Low (Texture analyzer or empirical geometry) | 12–24 hrs (curing time) | High (sensitive to curing) | Exact thermal history of the gel, trace multivalent cations, pH micro-variations |
+| Candidate Proxy | Target Property | Sample Prep Required | Per-Sample Time | Expected RMSEP (from Cross-Validation) | Value (Information / Cost) |
+|:---|:---|:---|:---|:---|:---|
+| **Simple Flow Time ($t_{flow}$)** | $M_w$ (Screening) | **Standardized Precipitate**. Dissolved at fixed concentration, pH, temp. | 5–10 min | To be measured (High variance expected) | **High** (Ultra-cheap, fast empirical screening) |
+| **Intrinsic Viscosity ($[\eta]$)** | $M_w$ (Quantitative) | **Standardized Precipitate**. Dilution series required. | 30–45 min | To be measured (relies on Mark-Houwink $K, a$ calibration) | **High** (Strong theoretical basis, but constants break down at $>10^5$ Da without specific calibration) |
+| **FTIR / DRIFTS** | $DE$ & $X_{GalA}$ | **Standardized Precipitate (Dried)**. | < 5 min | To be measured (Lit suggests 1–3% DE error) | **Very High** (Full-spectrum chemometrics PLS/PCR yields multiple targets simultaneously) |
+| **mHDP Colorimetry** | $X_{GalA}$ (Anchor) | Direct or precipitate | 20 min | $\approx 2-3\%$ (Lit target) | **Medium** (Better suited as a medium-frequency anchor assay than a high-frequency proxy) |
+| **Standardized Gel Test** | $Q_{functional}$ | **Standardized Formulation**. Fixed sucrose/pH/Ca$^{2+}$, controlled cooling. | 12–24 hrs | N/A (Direct functional metric) | **High** (Does not predict yield directly, but differentiates product quality for optimization) |
 
-## 2. Selected Primary Measurement Stack: `FTIR + Viscosity`
+## 2. Proposed Measurement Hierarchy
 
-Based on the value criterion ($Value = \frac{\text{Information Gained}}{\text{Cost}}$), the project adopts the following two-tier architecture:
+Instead of performing every assay on every sample, the digital twin architecture uses a tiered measurement hierarchy:
 
-### Routine Aliquot Testing (High Frequency)
-1. **Precipitation Step**: Every aliquot undergoes a rapid Alcohol Insoluble Residue (AIR) precipitation and drying. This eliminates the massive confounding effects of the extraction liquor (water, citric acid, raw sugars).
-2. **FTIR Scan**: The dried pellet is scanned. A calibrated chemometric (PLS/PCR) model predicts:
-   * $\widehat{DE} \pm \sigma_{DE}$
-   * $\widehat{X_{GalA}} \pm \sigma_{GalA}$
-3. **Viscosity Test**: The pellet is dissolved in a standard buffer at an exact concentration. Intrinsic/kinematic viscosity predicts:
-   * $\widehat{M_w} \pm \sigma_{Mw}$
+1. **High-Frequency (Every Reactor Aliquot)**:
+   * **FTIR Spectrum** $\rightarrow \widehat{DE}, \widehat{X_{GalA}}$ (via full-spectrum chemometrics like PLS/PCR, not just a single peak ratio).
+   * **Simple Flow Time ($t_{flow}$)** $\rightarrow \widehat{M_w}$ (rapid empirical screening at fixed concentration).
+2. **Medium-Frequency (Selected Checkpoints)**:
+   * **mHDP Colorimetry** $\rightarrow$ True $X_{GalA}$ (To anchor the FTIR GalA model and correct for neutral sugar interference).
+   * **Titration** $\rightarrow$ True $DE$ (To anchor the FTIR DE model).
+3. **Low-Frequency (Calibration Anchors & Feedstock)**:
+   * **SEC-MALLS** $\rightarrow$ True $M_w$.
+4. **Occasional / Optimization Target**:
+   * **Standardized Gel/Texture** $\rightarrow Q_{functional}$. Allows the optimizer to distinguish between two runs that have identical GalA yield but different gelation qualities.
 
-### Anchor Testing (Low Frequency / Calibration)
-Only a small, mathematically selected subset of samples (the proxy calibration set, plus occasional quality-control anchors from the reactor) are sent for:
-* **Titration** (True $DE$)
-* **HPSEC-MALLS** (True $M_w$)
-* **mHDP Colorimetry** (True GalA)
+## 3. Bayesian Implementation Rule
+The uncertainty fed into the Bayesian digital twin ($\sigma_{proxy}$) is **never a literature assumption**. It must be strictly defined as the Root Mean Square Error of Prediction (**RMSEP**) derived from the held-out cross-validation set during the Proxy Discovery Campaign. 
 
-## 3. Implementation Implications
-By abandoning the attempt to test the *direct extraction liquor*, we accept a slight increase in sample prep time (the rapid precipitation step). However, this completely standardizes the chemical matrix, unlocking the ability to use FTIR and Capillary Viscosity as highly accurate, theoretically grounded proxies. This reduces the marginal cost of a time-resolved measurement from $\sim$\$100+ (SEC/Titration) to effectively the cost of ethanol and technician time, while the Bayesian digital twin effortlessly handles the residual calibration uncertainty.
+The Bayesian model then natively consumes these as probability distributions (e.g., $M_w \sim \mathcal{N}(420, RMSEP^2)$), seamlessly downgrading the influence of the cheap proxy relative to a true SEC-MALLS anchor.
