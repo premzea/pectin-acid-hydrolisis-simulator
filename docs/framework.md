@@ -202,15 +202,7 @@ In complex systems, parameters rarely act in complete isolation. Instead, they o
 For instance, an increase in a reaction rate constant can be almost perfectly offset by a corresponding change in an activation energy or a mass transfer coefficient. This creates a flat valley or "trough" in the optimization landscape.
 The individual parameters cannot be uniquely resolved; only their combined ratio or product is identifiable. The direction along the valley floor is known as a sloppy direction, whereas the steep walls of the valley represent stiff directions.
 
-```mermaid
-graph TD
-  subgraph Parameter Identifiability SVD
-    A[Stiff Direction: High Sensitivity] --- B((Parameter Estimate))
-    B --- C[Sloppy Direction: Parameter compensation valley]
-  end
-```
-                   Parameter θ₂
-                        ▲
+![Parameter Identifiability and Compensation Landscape: 2D confidence ellipses illustrating stiff eigenvectors with high sensitivity versus sloppy directions along compensation valleys](assets/parameter_identifiability_sloppy.svg)
 ## The Sensitivity Matrix
 The primary tool for diagnosing local identifiability is the Sensitivity Matrix, $\mathbf{S}$. It tracks how much each predicted observation $y_i$ shifts at a specific time step $t_k$ when a parameter $\theta_j$ is perturbed slightly:
 $$

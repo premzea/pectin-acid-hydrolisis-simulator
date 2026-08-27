@@ -446,14 +446,9 @@ their combined ratio or product is identifiable. The direction along the
 valley floor is known as a sloppy direction, whereas the steep walls of
 the valley represent stiff directions.
 
-#mermaid(
-  ```
-  graph TD
-    subgraph Parameter Identifiability SVD
-      A[Stiff Direction: High Sensitivity] --- B((Parameter Estimate))
-      B --- C[Sloppy Direction: Parameter compensation valley]
-    end
-  ```,
+#figure(
+  image("assets/parameter_identifiability_sloppy.svg", width: 90%),
+  caption: [Parameter Identifiability Landscape: 2D confidence ellipses illustrating the stiff eigen-direction (narrow, steep sensitivity walls, $sigma_(max)$) versus the sloppy eigen-direction (elongated parameter compensation valley, $sigma_(min)$) under SVD / Fisher Information analysis.],
 )
 
 
