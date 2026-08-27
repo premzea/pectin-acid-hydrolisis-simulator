@@ -109,7 +109,7 @@ To avoid mathematical ambiguity, all parameters are strictly assigned an ontolog
   [$p H$], [Kinetic Acidity], [pH], [1.2 -- 4.5], [Controlled Process Variable],
   [$t$], [Extraction Time], [min], [5 -- 120 min], [Controlled Process Variable],
   [$d_{50}$], [Particle Size], [μm], [149 -- 600 μm], [Measured State],
-  [$M_{w,"matrix"}$], [MW of matrix pectin], [Da], [$6.54 \times 10^5$], [Informative Prior],
+  [$M_{w,"matrix"}$], [MW of matrix pectin], [Da], [$6.54 times 10^5$], [Informative Prior],
   [$k_{i,"ref"}$], [Reference Rates], [$\text{min}^{-1}$], [TBD], [Calibrated],
   [$E_{i}$], [Activation Energies], [J/mol], [TBD], [Calibrated],
   [$n_{i}$], [Acidity Orders], [-], [1.0], [Fixed V1],
