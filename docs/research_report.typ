@@ -25,7 +25,7 @@
 
 #align(center)[
   #text(size: 22pt, font: "Inter", weight: "bold", fill: rgb("#1d3557"))[
-    Hybrid Mechanistic & Bayesian Optimization System for Passion-Fruit Pectin Extraction
+    Hybrid Mechanistic, Bayesian Inference & Optimization System for Passion-Fruit Pectin Extraction
   ]
   
   #v(1em)
@@ -45,11 +45,13 @@ This document synthesizes the complete research architecture for building a digi
 
 The sequence of this research project is explicitly defined as:
 $
-text("Mechanistic ODE Model") 
-arrow.r text("Identifiability & OED") 
+text("Mechanistic Model") 
+arrow.r text("Synthetic Recovery") 
+arrow.r text("OED") 
 arrow.r text("Proxy Calibration") 
-arrow.r text("Physical Reactor Campaign") 
-arrow.r text("Bayesian Parameter Learning")
+arrow.r text("Physical Experiment") 
+arrow.r text("Bayesian Update")
+arrow.r text("Optimization")
 $
 
 = Mechanistic Reactor Model (V1.3)
@@ -97,9 +99,9 @@ Kinetics are parameterized via an Arrhenius reference-state formulation ($T_{"re
 The serial cascade induces a severe identifiability problem: a fast extraction/fast degradation trajectory looks mathematically identical to a slow extraction/slow degradation trajectory if observed only at the process endpoint.
 
 == Bayesian Optimal Experimental Design (OED)
-By computing the Fisher Information Matrix (FIM) over the 10-dimensional parameter space, we designed an exact 10-run protocol that minimizes the determinant of the posterior covariance matrix (D-optimal design). 
+By computing the Fisher Information Matrix (FIM) over the 9-dimensional parameter space, we designed an exact 10-run protocol that minimizes the determinant of the posterior covariance matrix (D-optimal design). 
 
-The OED algorithm specifically mandates *time-resolved* observation (sampling at $t=15, 45, 90, 120$ min) and pushes the thermodynamic boundaries (e.g., $95^circ$C/pH 1.5 vs $50^circ$C/pH 3.0) to break the $k_{"hyd"} <-> k_{"deg"}$ correlation. The resulting design achieved an excellent condition number ($kappa approx 27.0$).
+The OED analysis strongly favors time-resolved observation, particularly at early and intermediate residence times, to break the $k_{"hyd"} <-> k_{"deg"}$ correlation. It pushes the boundary conditions of the operating space (e.g., $95^circ$C/pH 1.5 vs $50^circ$C/pH 3.0). For the final 10-run protocol utilizing 4-point time-resolved tracking, the selected protocol substantially improves the conditioning of the inverse problem, eliminating near-null sensitivity directions and achieving a condition number of $kappa approx 27.0$.
 
 = Hierarchical Measurement Architecture
 The time-resolved OED campaign requires 6 samples per run. Performing conventional SEC-MALLS (for $M_w$), Titration (for $DE$), and mHDP Colorimetry (for GalA purity) on every aliquot is economically unviable. 
@@ -107,22 +109,22 @@ The time-resolved OED campaign requires 6 samples per run. Performing convention
 We solve this using a Bayesian Proxy Measurement Model. The physical experiment is segmented into a preparation layer and an observation layer.
 
 == The Preparation Model & Precipitation Bias
-Direct measurement of raw reactor liquor is invalid due to massive spectral and rheological confounding by unreacted acid, trace metal ions, and simple sugars. All samples undergo **Standardized Alcohol Precipitation**. 
+Direct measurement of raw reactor liquor is strongly confounded by the extraction matrix (unreacted acid, trace metal ions, simple sugars) and is therefore not the preferred basis for routine proxy measurements. All proxy samples undergo **Standardized Alcohol Precipitation**. 
 
-This is not a neutral step. Ethanol fractionation can selectively recover high-$M_w$ pectin while leaving low-$M_w$ fragments in solution. We model this as $\eta_{"precipitation"} = f(M_w, DE)$. The proxy must be calibrated on the exact same precipitated material to absorb this physical bias natively.
+This is not a neutral step. Ethanol fractionation can selectively recover high-$M_w$ pectin while leaving low-$M_w$ fragments in solution. We model this recovery bias as $\eta_{"precipitation"} = f(M_w, DE)$. The proxy must be calibrated on the exact same precipitated material to absorb this physical bias natively.
 
 == The Proxy Observation Model
 We deploy two ultra-fast, low-cost sensors on the standardized precipitate:
 1. *FTIR/DRIFTS Spectroscopy*: A chemometric PLS model maps the full mid-IR spectrum to $DE$ and GalA fraction.
-2. *Capillary Viscometry*: The flow time ($t_{"flow"}$) at a strictly recorded concentration ($C_{"pellet"}$) is mapped to $M_w$ using passion-fruit-specific empirical constants, replacing the fragile assumption of universal Mark-Houwink parameters.
+2. *Capillary Viscometry*: The flow time ($t_{"flow"}$) at a strictly recorded concentration ($C_{"pellet"}$) provides a low-cost MW proxy calibrated directly against HPSEC-MALLS on the same passion-fruit pectin material, avoiding reliance on universal Mark-Houwink constants.
 
 == Bayesian Integration
 The measurement hierarchy resolves into a clean Directed Acyclic Graph (DAG):
 $ text("Kinetic ODE") arrow.r y_{"true"} arrow.r y_{"prepared"} arrow.r z_{"observed"} $
 
 Where $y = (Y, DE, M_w, X_{"GalA"})$ and $z = (text("FTIR"), t_{"flow"}, C_{"ppt"}, C_{"pellet"})$.
-This formulation allows the digital twin to naturally consume the empirical proxy uncertainty via the Root Mean Square Error of Prediction (RMSEP) derived from a Leave-One-Run-Out (LORO) validation experiment:
-$ p(theta mid z) = integral p(theta mid y) p(y mid z) dy $
+Then the posterior over kinetic parameters is obtained by marginalizing the latent physicochemical state:
+$ p(theta mid z, x) prop p(theta) integral p(z mid y) p(y mid theta, x) d y $
 
 = Physical Implementation & Minimum Viable Laboratory (MVP)
 The hierarchical measurement architecture directly enables a decentralized, low-capital laboratory strategy. By mathematically separating high-frequency proxies from low-frequency ground-truth anchors, the physical execution requires minimal in-house capital expenditure.
@@ -135,21 +137,23 @@ The project relies on a hybrid execution model, partnering with university core 
    - Continuous RTD temperature logging and pH meters.
    - Standardized precipitation equipment (centrifuge, vacuum oven).
    - Calibrated analytical balance (Critical: drives the entire mass-basis of the kinetic ODE).
-   - Capillary viscometer and UV-Vis spectrophotometer (initial cheap proxy and GalA anchor).
+   - Capillary viscometer and UV-Vis spectrophotometer.
 2. *University / Core Facility Access*: 
    - ATR-FTIR Spectrometer (High-frequency chemical proxy).
    - HPSEC-MALLS (Low-frequency $M_w$ anchor).
 
-Expensive automated bioreactors, inline FTIR sensors, and sophisticated rheometers are explicitly deferred. The proxy models adapt to the manual but highly standardized benchtop data.
+Expensive automated bioreactors, inline FTIR sensors, and sophisticated rheometers are explicitly deferred. 
 
 == Analytical Discipline & Traceability
-The true bottleneck is not analytical hardware, but data traceability. The Bayesian inference engine requires an unbroken relational chain linking the final measurement back to the thermodynamic history of the extraction. 
+The Bayesian inference engine requires an unbroken relational chain linking the final measurement back to the thermodynamic history of the extraction. 
 
 The primary key for all data ingestion is the composite `SampleID` (e.g., `B002-R07-S03`). This uniquely binds a physical pellet to:
 $ t_{"aliquot"} + T(t) + p H(t) + m_{"liquor"} + m_{"pellet"} $
-If this chain is broken, the sample's process history cannot be assigned reliably, rendering it unsuitable for kinetic inference.
+If this chain is broken, the sample may no longer be suitable for kinetic inference because its process history cannot be assigned reliably.
 
 = Conclusion & Execution Map
-The mechanistic model has been mathematically verified, structural identifiability resolved via D-optimal design, and the measurement architecture strictly defined. By framing the laboratory itself as a probabilistic parameter inside the digital twin, the project is insulated from the capital costs and physical biases that typically derail bioreactor optimization.
+The mechanistic model has been mathematically verified, structural identifiability resolved via D-optimal design, and the measurement architecture strictly defined. By explicitly modeling sample preparation and measurement uncertainty as part of the Bayesian observation hierarchy, the project is insulated from the capital costs and physical biases that typically derail bioreactor optimization.
 
-The immediate physical step is the **Phase 1 Proxy Calibration**, generating 30 paired observations across 5 OED extreme trajectories to construct the $p(y mid z)$ measurement likelihoods. Once the chemometric and rheological proxies are validated against the SEC/Titration anchors, the system proceeds to the dense 14-run kinetic reactor campaign for final parameter closure.
+The reactor is specified here not merely as a machine producing pectin, but as an experimental measurement instrument built specifically for identifying a dynamic model.
+
+The immediate physical step is the **Phase 1 Proxy Calibration**, generating 30 paired observations across 5 OED extreme trajectories to construct the $p(y mid z)$ measurement likelihoods. Once the chemometric and rheological proxies are validated against the SEC/Titration anchors, the system proceeds to the **10-run OED-selected calibration campaign plus 4 independent validation runs** for final parameter closure.
