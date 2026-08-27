@@ -55,6 +55,43 @@ arrow.r text("Bayesian Update")
 arrow.r text("Optimization")
 $
 
+= Generalized Methodological Framework
+While this document details the specific application of pectin acid hydrolysis, the underlying architecture represents a highly generalizable **Hybrid Mechanistic--Statistical Experimental Learning System**. This methodology applies broadly to bioprocessing, materials synthesis, and reaction engineering where experiments are expensive and optimization is critical.
+
+== The Three Pillars of System Intelligence
+The framework explicitly separates three distinct computational responsibilities:
+#align(center)[
+  #table(
+    columns: (auto, auto),
+    align: (right, left),
+    stroke: none,
+    [$text("Mechanistic Model") arrow.r$], [What can happen? (Physics/Chemistry)],
+    [$text("Bayesian Inference") arrow.r$], [What do we currently believe? (Uncertainty)],
+    [$text("OED / Active Learning") arrow.r$], [What should we measure next? (Information)]
+  )
+]
+Machine learning surrogates serve strictly to make these three operations computationally affordable.
+
+== The Nine Core Components
+The complete conceptual architecture consists of nine integrated components:
+
+1. *Mechanistic Process Model*: Represents the underlying physical system ($x_{t+1} = f(x_t, u_t, theta)$), providing interpretability, extrapolation structure, conservation laws, and a place to encode prior scientific knowledge.
+2. *Identifiability Analysis*: Determines what can actually be learned from available measurements using sensitivity matrices ($S = (partial y) / (partial theta)$).
+3. *Optimized Experimental Design (OED)*: Selects experiments that maximize information gain ($x^* = limits("arg max")_x cal(I)(x)$) using formal optimality criteria (e.g., D-optimality).
+4. *Hierarchical Proxy Measurement Model*: Models the entire observation chain ($text("True State") arrow.r text("Preparation") arrow.r text("Proxy") arrow.r text("Observation")$) rather than assuming perfect sensors, turning expensive assays into calibration anchors for dense, cheap measurements.
+5. *Bayesian Parameter Inference*: Infers the full posterior probability ($p(theta mid D)$) rather than point estimates, quantifying uncertainty in both parameters and future predictions ($p(y^* mid x^*, D)$).
+6. *Surrogate ML Modeling*: Learns the expensive forward mapping ($hat(f)(x, theta) approx f(x, theta)$) to accelerate inference and optimization.
+7. *Optimization Under Uncertainty*: Replaces standard expected-value maximization with robust decision-making (e.g., maximizing the probability of an acceptable outcome subject to quality/reliability constraints).
+8. *Sequential Active Learning*: Closes the loop. The system does not run once; it continuously iterates: $text("Model") arrow.r text("Optimal Experiment") arrow.r text("Data") arrow.r text("Bayesian Update") arrow.r text("Next Experiment")$.
+9. *Model Validation & Discrepancy*: Acknowledges that $y = f(x, theta) + delta(x) + epsilon$, formally modeling the systematic structural mismatch ($delta(x)$) between the mathematical equations and physical reality to enable true model criticism.
+
+== The Core Abstraction
+The deepest abstraction of this system is not "use ML to optimize a reactor." It is:
+
+#quote(block: true)[
+  Build a mechanistic model, quantify what you don't know, design the cheapest experiments that maximally reduce that uncertainty, use inexpensive measurements wherever possible through calibrated observation models, and close the loop by updating the model and selecting the next experiment.
+]
+
 = Mechanistic Reactor Model (V1.3)
 == Compartmental Cascade
 The extraction is modeled as a 4-pool cascading mass transfer system. The cascade structure forces a critical structural tradeoff between extraction speed and product degradation.
