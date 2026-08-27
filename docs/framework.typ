@@ -27,7 +27,9 @@ fits a generic machine learning model, and hopes for accurate
 predictions. Instead, this document presents a unified framework for a
 structured scientific learning system.
 
-$ upright("Don’t simply collect data and fit a black-box model. Build a system that knows what it knows, identifies what it does not know, chooses informative experiments, leverages cheap proxy measurements, and dynamically updates itself as new evidence arrives.") $
+#quote(block: true)[
+  *Don't simply collect data and fit a black-box model. Build a system that knows what it knows, identifies what it does not know, chooses informative experiments, leverages cheap proxy measurements, and dynamically updates itself as new evidence arrives.*
+]
 
 == The Unified System Architecture
 <the-unified-system-architecture>
@@ -711,12 +713,17 @@ under an assumption of homoscedastic Gaussian noise. \#\# Informative
 vs.~Uninformative Priors The choice of prior defines the starting point
 of our learning system:
 
-Probability Density ▲ │ Uninformative Prior (Uniform / Broad) │
-┌──────────────────────────────────────────────┐ │ │ │ │
-───┴──────────────────────────────────────────────┴───► Parameter Value
-│ │ Informative Prior (Gaussian / Literature Bound) │ #emph[\..──..] │
-\.' `.     │               .'`. │ ────────────' \`────────────►
-Parameter Value
+Probability Density ▲ │#mermaid(
+```
+graph TD
+  subgraph Uninformative Prior
+    A[Uniform / Broad distribution]
+  end
+  subgraph Informative Prior
+    B[Gaussian / Literature Bound]
+  end
+```
+)
 
 - Uninformative Priors (Flat/Uniform): Used when there is no prior data
   for a parameter. We assign a wide uniform distribution,
@@ -858,11 +865,16 @@ absorbs systematic, structured errors that the ODE model cannot capture,
 preventing those errors from biasing your physical parameter estimates
 $bold(theta)$.
 
-Real-World Data ────────► \[ Complete System Response \] │
-┌────────────────────────┴────────────────────────┐ ▼ ▼ \[ Mechanistic
-ODE Model \] \[ Discrepancy GP δ(x) \] Captures primary physical laws
-Absorbs unmodeled phenomena (Mass balance, Arrhenius kinetics) (Mixing
-anomalies, side reactions)
+#mermaid(
+```
+graph TD
+  A[Real-World Data] --> B[Complete System Response]
+  B --> C[Mechanistic ODE Model]
+  C --> C2[Captures primary physical laws]
+  B --> D[Discrepancy GP]
+  D --> D2[Absorbs unmodeled phenomena]
+```
+)
 
 == Discrepancy Diagnostics: Residual Analysis
 <discrepancy-diagnostics-residual-analysis>
@@ -1072,4 +1084,5 @@ let me know:
 
 I can help write the core Python code for the sensitivity equations,
 configure your MCMC sampler, or build the acquisition loop.
+
 
