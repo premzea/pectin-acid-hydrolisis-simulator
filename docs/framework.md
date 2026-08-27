@@ -8,9 +8,7 @@ When data are sparse and measurements are slow, traditional trial-and-error expl
 To overcome these limitations, we must abandon the naive paradigm of treating a physical system as a black box—where one simply collects a fixed grid of data, fits a generic machine learning model, and hopes for accurate predictions. Instead, this document presents a unified framework for a structured scientific learning system.
 
 $$
-
 \text{Don't simply collect data and fit a black-box model. Build a system that knows what it knows, identifies what it does not know, chooses informative experiments, leverages cheap proxy measurements, and dynamically updates itself as new evidence arrives.}
-
 $$
 
  
@@ -79,9 +77,7 @@ Observations (y) + Inputs (x)  ─────────────►  Param
 The Forward Problem is mathematically deterministic and well-posed. Given a vector of operating inputs $x$ and a concrete vector of physical parameters $\theta$, we evaluate a forward operator $\mathcal{F}$ (such as an analytical equation or a numerical ODE integrator) to uniquely predict the experimental observations $y$:
 
 $$
-
 y = \mathcal{F}(x, \theta) + \epsilon
-
 $$
 
  
@@ -89,9 +85,7 @@ where $\epsilon$ represents random measurement noise. If $\mathcal{F}$ is proper
 The Inverse Problem is fundamentally ill-posed, highly non-linear, and non-unique. Given a set of experimental inputs $x$ and real-world observations $y$, we seek to reconstruct the underlying physical parameters $\theta$:
 
 $$
-
 \theta = \mathcal{F}^{-1}(y, x)
-
 $$
 
  
@@ -100,9 +94,7 @@ Inverse problems are extraordinarily difficult because the mapping $\mathcal{F}^
 Consider a basic chemical cascade where component $A$ transforms into intermediate $B$ with rate constant $k_1$, which then degrades into waste product $C$ with rate constant $k_2$:
 
 $$
-
 A \xrightarrow{k_1} B \xrightarrow{k_2} C
-
 $$
 
  
@@ -113,9 +105,7 @@ Throughout this document, we ground these abstract concepts in a real-world chem
 Its yield and quality depend on a multi-step reaction cascade where protopectin inside the plant matrix is dissolved, broken down into functional polymers, and ultimately destroyed by over-hydrolysis. We represent this via a four-pool structural kinetic cascade:
 
 $$
-
 \text{P}_{\text{matrix}} \xrightarrow{k_{\text{ext}}} \text{P}_{\text{sol}} \xrightarrow{k_{\text{hyd}}} \text{P}_{\text{lowMW}} \xrightarrow{k_{\text{deg}}} \text{P}_{\text{loss}}
-
 $$
 
  
@@ -144,17 +134,13 @@ Unlike empirical black-box equations (such as polynomials, random forests, or de
 A standard continuous-time mechanistic process model is formalized as a system of parameterized ordinary differential equations:
 
 $$
-
 \frac{d\mathbf{w}}{dt} = \mathbf{f}(\mathbf{w}(t), \mathbf{x}(t), \boldsymbol{\theta})
-
 $$
 
  
 
 $$
-
 \mathbf{y}(t) = \mathbf{g}(\mathbf{w}(t), \mathbf{x}(t), \boldsymbol{\theta})
-
 $$
 
  
@@ -171,67 +157,51 @@ Where:
 Applying this formal structure to our acid-hydrolysis cascade, we define our four states as mass fractions normalized to the total initial insoluble protopectin available in the peel matrix:
 
 $$
-
 \mathbf{w}(t) = \begin{bmatrix} P_{\text{matrix}}(t) \\ P_{\text{sol}}(t) \\ P_{\text{lowMW}}(t) \\ P_{\text{loss}}(t) \end{bmatrix}
-
 $$
 
  
 The governing system of non-linear differential equations is formulated as:
 
 $$
-
 \frac{dP_{\text{matrix}}}{dt} = -k_{\text{ext}}(T, d_p) \cdot P_{\text{matrix}}
-
 $$
 
  
 
 $$
-
 \frac{dP_{\text{sol}}}{dt} = k_{\text{ext}}(T, d_p) \cdot P_{\text{matrix}} - k_{\text{hyd}}(T, \text{pH}) \cdot P_{\text{sol}}
-
 $$
 
  
 
 $$
-
 \frac{dP_{\text{lowMW}}}{dt} = k_{\text{hyd}}(T, \text{pH}) \cdot P_{\text{sol}} - k_{\text{deg}}(T, \text{pH}) \cdot P_{\text{lowMW}}
-
 $$
 
  
 
 $$
-
 \frac{dP_{\text{loss}}}{dt} = k_{\text{deg}}(T, \text{pH}) \cdot P_{\text{lowMW}}
-
 $$
 
  
 The kinetics are explicitly driven by environmental inputs. The rate constants follow a modified Arrhenius formulation to capture the non-linear impacts of Temperature ($T$, in Kelvin) and chemical catalysts ($\text{pH}$ or particle size $d_p$):
 
 $$
-
 k_{\text{ext}}(T, d_p) = A_{\text{ext}} \cdot \left(\frac{1}{d_p}\right)^{\alpha} \cdot \exp\left(-\frac{E_{a,\text{ext}}}{R \cdot T}\right)
-
 $$
 
  
 
 $$
-
 k_{\text{hyd}}(T, \text{pH}) = A_{\text{hyd}} \cdot \left(10^{-\text{pH}}\right)^{\beta} \cdot \exp\left(-\frac{E_{a,\text{hyd}}}{R \cdot T}\right)
-
 $$
 
  
 
 $$
-
 k_{\text{deg}}(T, \text{pH}) = A_{\text{deg}} \cdot \left(10^{-\text{pH}}\right)^{\gamma} \cdot \exp\left(-\frac{E_{a,\text{deg}}}{R \cdot T}\right)
-
 $$
 
  
@@ -247,18 +217,14 @@ A primary advantage of mechanistic formulations over black-box models is their i
 Because the 4-pool differential equations describe a closed mass cascade where mass leaving one pool must immediately enter the next, the total mass is conserved perfectly at every point in time. Summing the vector field yields:
 
 $$
-
 \frac{d}{dt}\left(P_{\text{matrix}} + P_{\text{sol}} + P_{\text{lowMW}} + P_{\text{loss}}\right) = 0
-
 $$
 
  
 Integrating this expression from $t=0$ with initial conditions $\mathbf{w}(0) = [1, 0, 0, 0]^T$ reveals a strict linear invariant:
 
 $$
-
 \sum_{i=1}^{4} w_i(t) = 1.0 \quad \forall t \geq 0
-
 $$
 
  
@@ -267,9 +233,7 @@ If a machine learning algorithm predicts a total mass sum of $1.05$ or $0.92$, i
 Because concentrations cannot be negative, the model's equations naturally enforce a lower bound at zero. For any pool $w_i$, its outflow rate is directly proportional to its current concentration ($w_i$). As any pool approaches zero, its evacuation rate drops smoothly to zero:
 
 $$
-
 \lim_{w_i \to 0^+} \frac{dw_i}{dt} \geq 0
-
 $$
 
  
@@ -353,18 +317,14 @@ The individual parameters cannot be uniquely resolved; only their combined ratio
 The primary tool for diagnosing local identifiability is the Sensitivity Matrix, $\mathbf{S}$. It tracks how much each predicted observation $y_i$ shifts at a specific time step $t_k$ when a parameter $\theta_j$ is perturbed slightly:
 
 $$
-
 S_{k,j} = \frac{\partial y_i(t_k)}{\partial \theta_j}
-
 $$
 
  
 Because different parameters use vastly different physical units (e.g., pre-exponential factors can be on the order of $10^{13} \text{ s}^{-1}$ while activation energies are around $10^5 \text{ J/mol}$), direct raw sensitivities are uninterpretable and scale-dependent. We must convert them into dimensionless logarithmic sensitivities:
 
 $$
-
 \tilde{S}_{k,j} = \frac{\partial y_i(t_k)}{\partial \ln \theta_j} = \theta_j \frac{\partial y_i(t_k)}{\partial \theta_j}
-
 $$
 
  
@@ -373,9 +333,7 @@ The value $\tilde{S}_{k,j}$ represents the absolute change in the predicted meas
 The Fisher Information Matrix ($\mathbf{F}$) condenses these sensitivities across all sample points and factors in the instrument's measurement uncertainty. Assuming independent, identically distributed Gaussian measurement noise with variance $\sigma^2$, the FIM is computed as:
 
 $$
-
 \mathbf{F} = \mathbf{S}^T \mathbf{W} \mathbf{S} = \frac{1}{\sigma^2} \mathbf{S}^T \mathbf{S}
-
 $$
 
  
@@ -383,9 +341,7 @@ Where $\mathbf{W}$ is a weighting matrix (typically the inverse of the noise cov
 The FIM holds a profound physical meaning: according to the Cramér-Rao Bound, the inverse of the Fisher Information Matrix sets the absolute lower bound on the variance-covariance matrix of any unbiased parameter estimator:
 
 $$
-
 \mathbf{Cov}(\boldsymbol{\theta}) \geq \mathbf{F}^{-1}
-
 $$
 
  
@@ -397,9 +353,7 @@ $$
 To diagnose exactly which parameters are compensating for each other, we compute the Singular Value Decomposition of our scaled sensitivity matrix or the corresponding FIM:
 
 $$
-
 \mathbf{F} = \mathbf{V} \boldsymbol{\Sigma} \mathbf{V}^T
-
 $$
 
  
@@ -411,9 +365,7 @@ Where:
 ## Physical Interpretation
 
 $$
-
 \text{The Condition Number } \kappa = \frac{\sigma_{\text{maximum}}}{\sigma_{\text{minimum}}}
-
 $$
 
  
@@ -423,9 +375,7 @@ If a vector $\mathbf{v}_{n_\theta}$ has large coefficients for both $\theta_3$ a
 When fitting our pectin kinetics, optimization algorithms often uncover a massive, near-perfect linear correlation ($r > 0.99$) between the pre-exponential frequency factor and the activation energy within the hydrolysis and degradation loops:
 
 $$
-
 \ln A_{\text{hyd}} \longleftrightarrow E_{a,\text{hyd}} \quad \text{and} \quad \ln A_{\text{deg}} \longleftrightarrow E_{a,\text{deg}}
-
 $$
 
  
@@ -452,9 +402,7 @@ OED operates by converting the multi-dimensional Fisher Information Matrix $\mat
 The D-optimality criterion maximizes the log-determinant of the FIM:
 
 $$
-
 \Phi_D = \ln \det(\mathbf{F})
-
 $$
 
  
@@ -475,17 +423,13 @@ An automated D-optimal experimental design algorithm applied to our passion-frui
 An unconstrained algorithm might suggest operating at a destructive $\text{pH}$ of $-0.5$, running a reaction for 10 hours, or taking samples every 3 seconds. Real self-learning systems must incorporate physical and operational boundaries directly into their optimization constraints:
 
 $$
-
 \max_{\mathbf{x} \in \mathcal{X}} \ln \det \mathbf{F}(\mathbf{x})
-
 $$
 
  
 
 $$
-
 \text{Subject to: } \begin{cases} 2.0 \leq \text{pH} \leq 4.5 & \text{(Corrosion/safety boundary)} \\ 60^\circ\text{C} \leq T \leq 100^\circ\text{C} & \text{(Atmospheric boiling limits)} \\ \Delta t_{\text{sampling}} \geq 2 \text{ min} & \text{(Human/autosampler speed limits)} \end{cases}
-
 $$
 
  
@@ -496,9 +440,7 @@ When dealing with sparse, noisy data, single-point parameter estimates (like Max
 Bayesian inference updates our prior beliefs about a system after confronting them with real-world data. It is governed by Bayes' Theorem:
 
 $$
-
 p(\boldsymbol{\theta} \mid D) = \frac{p(D \mid \boldsymbol{\theta}) \, p(\boldsymbol{\theta})}{p(D)}
-
 $$
 
  
@@ -513,27 +455,21 @@ Where:
 Let our real physical observations at discrete times be corrupted by independent Gaussian measurement noise:
 
 $$
-
 y_{\text{observed}}(t_k) = y_{\text{model}}(t_k, \boldsymbol{\theta}) + \epsilon_k, \quad \epsilon_k \sim \mathcal{N}(0, \sigma^2)
-
 $$
 
  
 The likelihood of observing a dataset of $N$ measurements given the parameter vector $\boldsymbol{\theta}$ is computed by taking the product of their individual Gaussian probability densities:
 
 $$
-
 p(D \mid \boldsymbol{\theta}, \sigma) = \prod_{k=1}^{N} \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left( -\frac{\left( y_{\text{observed}}(t_k) - y_{\text{model}}(t_k, \boldsymbol{\theta}) \right)^2}{2\sigma^2} \right)
-
 $$
 
  
 Taking the natural logarithm turns this product into a computationally stable sum of squares:
 
 $$
-
 \ln p(D \mid \boldsymbol{\theta}, \sigma) = -\frac{N}{2}\ln(2\pi) - N\ln(\sigma) - \frac{1}{2\sigma^2} \sum_{k=1}^{N} \left( y_{\text{observed}}(t_k) - y_{\text{model}}(t_k, \boldsymbol{\theta}) \right)^2
-
 $$
 
  
@@ -554,7 +490,6 @@ Probability Density
     │               .'            `.
     │  ────────────'                `────────────► Parameter Value
 
-
 * Uninformative Priors (Flat/Uniform): Used when there is no prior data for a parameter. We assign a wide uniform distribution, $p(\theta) \sim \text{Uniform}(\theta_{\min}, \theta_{\max})$, stating that any value within this range is equally probable.
 * Informative Priors: Used when leveraging historical data or physics constraints. If literature states that the activation energy for pectin hydrolysis typically falls near $85 \text{ kJ/mol}$ with a known standard deviation, we use a Gaussian prior: $p(E_{a,\text{hyd}}) \sim \mathcal{N}(\mu = 85000, \sigma^2 = 5000^2)$. This prevents the model from wasting computational cycles exploring unphysical or structurally impossible parameter regimes.
 
@@ -569,9 +504,7 @@ We bypass this bottleneck using Markov Chain Monte Carlo (MCMC) algorithms, such
    
 
 $$
-
 \alpha = \min\left(1, \frac{p(D \mid \boldsymbol{\theta}^*)p(\boldsymbol{\theta}^*)}{p(D \mid \boldsymbol{\theta}^{(m-1)})p(\boldsymbol{\theta}^{(m-1)})}\right)
-
 $$
 
  
@@ -599,18 +532,14 @@ To accelerate the loop, we introduce proxy measurements: cheap, non-destructive,
 We establish a mathematical calibration model (such as Partial Least Squares Regression [PLS] or a Gaussian Process) to infer the true state vector $\mathbf{w}$ from the raw proxy spectra or sensor arrays $\mathbf{z}$:
 
 $$
-
 \mathbf{w}_{\text{estimated}} = \mathcal{M}_{\text{calib}}(\mathbf{z}) + \boldsymbol{\epsilon}_{\text{proxy}}
-
 $$
 
  
 For our pectin project, an FTIR spectrometer measures absorbance across a range of wavenumbers $\mathbf{z} = [A_{\nu_1}, A_{\nu_2}, \dots, A_{\nu_P}]$. The calibration model isolates the fingerprint region for galacturonic acid ester linkages ($1740 \text{ cm}^{-1}$ and $1630 \text{ cm}^{-1}$) to predict real-time concentrations:
 
 $$
-
 \hat{P}_{\text{sol}}(t) = \beta_0 + \sum_{j=1}^{P} \beta_j \cdot A_{\nu_j}(t)
-
 $$
 
  
@@ -618,9 +547,7 @@ $$
 A common mistake is treating proxy estimates as absolute truth, ignoring the calibration error $\boldsymbol{\epsilon}_{\text{proxy}}$. If a proxy model has an $R^2 = 0.90$ with a root-mean-square error $\sigma_{\text{proxy}}$, this measurement uncertainty must be propagated directly into the likelihood function of the Bayesian parameter inference engine.
 
 $$
-
 \sigma_{\text{total}}^2 = \sigma_{\text{instrument}}^2 + \sigma_{\text{proxy\_calibration}}^2
-
 $$
 
  
@@ -636,9 +563,7 @@ For instance, the optimizer might force the activation energy $E_a$ to an imposs
 To correct for structural deficits without destroying the physical meaning of our parameters, we deploy the Kennedy-O'Hagan framework. We model the real-world physical system $y_{\text{real}}(x)$ as the sum of our mechanistic ODE model plus an explicit, non-parametric statistical discrepancy term:
 
 $$
-
 y_{\text{real}}(x) = y_{\text{model}}(x, \boldsymbol{\theta}) + \delta(x) + \epsilon
-
 $$
 
  
@@ -662,9 +587,7 @@ Captures primary physical laws                  Absorbs unmodeled phenomena
 To diagnose whether deviations are caused by random noise or structural model flaws, we analyze the prediction residuals over time:
 
 $$
-
 e(t_k) = y_{\text{observed}}(t_k) - y_{\text{model}}(t_k, \hat{\boldsymbol{\theta}})
-
 $$
 
  
@@ -679,9 +602,7 @@ Once the Bayesian parameters and model discrepancies are mapped, the system can 
 Our engineering goal is to find the optimal operating inputs $\mathbf{x}^* = [T, \text{pH}, d_p, t_{\text{batch}}]^T$ that maximize a specified performance metric, such as the pure functional pectin yield while minimizing raw material costs and degradation:
 
 $$
-
 \text{Objective Function } f(\mathbf{x}) = P_{\text{sol}}(\mathbf{x}) - \omega_1 \cdot P_{\text{loss}}(\mathbf{x}) - \omega_2 \cdot \text{Cost}(\mathbf{x})
-
 $$
 
  
@@ -690,9 +611,7 @@ Evaluating our complex system of ODEs and propagating full Bayesian parameter di
 The GP directly learns the mapping from inputs $\mathbf{x}$ to the optimization objective $f(\mathbf{x})$, drawing on the historical database of past physical runs. Crucially, a GP does not just predict a single value; it provides a full Gaussian probability distribution for its predictions at any point in the input space, defined by a mean $\mu(\mathbf{x})$ and an explicit variance $\sigma^2(\mathbf{x})$:
 
 $$
-
 \hat{f}(\mathbf{x}) \sim \mathcal{GP}\left(\mu(\mathbf{x}), k(\mathbf{x}, \mathbf{x}')\right)
-
 $$
 
  
@@ -706,9 +625,7 @@ We manage this balance using an Acquisition Function ($\alpha(\mathbf{x})$). The
 ## 1. Upper Confidence Bound (UCB)
 
 $$
-
 \alpha_{\text{UCB}}(\mathbf{x}) = \mu(\mathbf{x}) + \kappa \cdot \sigma(\mathbf{x})
-
 $$
 
  
@@ -721,27 +638,21 @@ Where $\kappa$ is a user-defined tuning parameter.
 The Expected Improvement criterion calculates the expectation of improving over the current best-known experimental result $f(\mathbf{x}^+)$:
 
 $$
-
 \alpha_{\text{EI}}(\mathbf{x}) = \mathbb{E}\left[ \max(0, \hat{f}(\mathbf{x}) - f(\mathbf{x}^+)) \right]
-
 $$
 
  
 Using the properties of the Gaussian distribution, this integrates analytically to:
 
 $$
-
 \alpha_{\text{EI}}(\mathbf{x}) = (\mu(\mathbf{x}) - f(\mathbf{x}^+))\Phi(Z) + \sigma(\mathbf{x})\phi(Z)
-
 $$
 
  
 Where $\Phi(\cdot)$ and $\phi(\cdot)$ are the standard normal cumulative distribution and probability density functions, and $Z$ is defined as:
 
 $$
-
 Z = \frac{\mu(\mathbf{x}) - f(\mathbf{x}^+)}{\sigma(\mathbf{x})}
-
 $$
 
  
