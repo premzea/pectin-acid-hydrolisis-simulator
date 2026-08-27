@@ -2,7 +2,7 @@
   paper: "us-letter",
   margin: (x: 1.25in, y: 1.25in),
   header: align(right)[
-    #text(8pt, fill: luma(120))[Pectin Extraction Digital Twin -- V1.4 Comprehensive Research Report]
+    #text(8pt, fill: luma(120))[Hybrid Mechanistic, Bayesian Inference & Optimization System -- Research Blueprint]
   ],
 )
 
