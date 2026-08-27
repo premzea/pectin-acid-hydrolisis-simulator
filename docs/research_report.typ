@@ -111,7 +111,7 @@ We solve this using a Bayesian Proxy Measurement Model. The physical experiment 
 == The Preparation Model & Precipitation Bias
 Direct measurement of raw reactor liquor is strongly confounded by the extraction matrix (unreacted acid, trace metal ions, simple sugars) and is therefore not the preferred basis for routine proxy measurements. All proxy samples undergo **Standardized Alcohol Precipitation**. 
 
-This is not a neutral step. Ethanol fractionation can selectively recover high-$M_w$ pectin while leaving low-$M_w$ fragments in solution. We model this recovery bias as $\eta_{"precipitation"} = f(M_w, D E)$. The proxy must be calibrated on the exact same precipitated material to absorb this physical bias natively.
+This is not a neutral step. Ethanol fractionation can selectively recover high-$M_w$ pectin while leaving low-$M_w$ fragments in solution. We model this recovery bias as $eta_{"precipitation"} = f(M_w, D E)$. The proxy must be calibrated on the exact same precipitated material to absorb this physical bias natively.
 
 == The Proxy Observation Model
 We deploy two ultra-fast, low-cost sensors on the standardized precipitate:
