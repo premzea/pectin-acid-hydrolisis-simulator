@@ -112,22 +112,6 @@ effects back to causes. \#\# Mathematical Definitions
   ```,
 )
 
-
-#mermaid(
-  ```
-  graph LR
-    subgraph FORWARD PROBLEM
-      direction LR
-      A[Inputs x + Parameters theta] --> B[Model]
-      B --> C[Observations y]
-    end
-    subgraph INVERSE PROBLEM
-      direction LR
-      A2[Observations y + Inputs x] --> B2[Algorithm]
-      B2 --> C2[Parameters theta]
-    end
-  ```,
-)
 The Forward Problem is mathematically deterministic and well-posed.
 Given a vector of operating inputs $x$ and a concrete vector of physical
 parameters $theta$, we evaluate a forward operator $cal(F)$ (such as an
@@ -748,15 +732,9 @@ under an assumption of homoscedastic Gaussian noise. \#\# Informative
 vs.~Uninformative Priors The choice of prior defines the starting point
 of our learning system:
 
-```
-graph TD
-  subgraph Uninformative Prior
-    A[Uniform / Broad distribution]
-  end
-  subgraph Informative Prior
-    B[Gaussian / Literature Bound]
-  end
-```
+#figure(
+  image("assets/priors_comparison.svg", width: 95%),
+  caption: [Comparison of Prior Probability Distributions: (Left) Uninformative uniform distribution assuming equal probability across broad bounds, versus (Right) Informative Gaussian prior enforcing physical domain constraints (e.g., activation energy $E_a approx 85 plus.minus 5 upright(" kJ/mol")$).],
 )
 
 - Uninformative Priors (Flat/Uniform): Used when there is no prior data
@@ -826,10 +804,10 @@ Solids via Refractive Index ($""^compose upright("Brix")$), online fluid
 density, or simple medium $upright("pH")$).
 
 #mermaid(
-```
-graph LR
-  A["TRUE METRIC<br/>High-MW Pectin Pool<br/>(Slow, Expensive)"] <-->|"Calibration<br/>Model"| B["PROXY INDICATOR<br/>FTIR Spectrum Absorbance<br/>(Fast, Inexpensive)"]
-```
+  ```
+  graph LR
+    A["TRUE METRIC<br/>High-MW Pectin Pool<br/>(Slow, Expensive)"] <-->|"Calibration<br/>Model"| B["PROXY INDICATOR<br/>FTIR Spectrum Absorbance<br/>(Fast, Inexpensive)"]
+  ```,
 )
 
 
@@ -907,12 +885,12 @@ preventing those errors from biasing your physical parameter estimates
 $bold(theta)$.
 
 #mermaid(
-```
-graph TD
-  A["Real-World Data"] --> B["Complete System Response<br/>y_real(x)"]
-  B --> C["Mechanistic ODE Model y_model(x, θ)<br/>• Captures primary physical laws<br/>• Mass balance, Arrhenius kinetics"]
-  B --> D["Discrepancy GP δ(x)<br/>• Absorbs unmodeled phenomena<br/>• Mixing anomalies, side reactions"]
-```
+  ```
+  graph TD
+    A["Real-World Data"] --> B["Complete System Response<br/>y_real(x)"]
+    B --> C["Mechanistic ODE Model y_model(x, θ)<br/>• Captures primary physical laws<br/>• Mass balance, Arrhenius kinetics"]
+    B --> D["Discrepancy GP δ(x)<br/>• Absorbs unmodeled phenomena<br/>• Mixing anomalies, side reactions"]
+  ```,
 )
 
 == Discrepancy Diagnostics: Residual Analysis
@@ -1021,7 +999,7 @@ prevents the system from getting stuck in local optima.
 
 #figure(
   image("assets/acquisition_tradeoff.svg", width: 95%),
-  caption: [The Exploration-Exploitation Tradeoff in Bayesian Optimization: Gaussian Process surrogate posterior with 95% credible bounds (top) and Acquisition Function landscape (bottom), demonstrating Candidate A (exploitation of high mean) vs Candidate B (exploration of high uncertainty).]
+  caption: [The Exploration-Exploitation Tradeoff in Bayesian Optimization: Gaussian Process surrogate posterior with 95% credible bounds (top) and Acquisition Function landscape (bottom), demonstrating Candidate A (exploitation of high mean) vs Candidate B (exploration of high uncertainty).],
 )
 
 
@@ -1072,21 +1050,16 @@ To apply this architecture to other domains, one must clearly separate the gener
     fill: (col, row) => if row == 0 { rgb("eef3f8") } else { none },
     align: (col, row) => (left + horizon),
     inset: (x: 10pt, y: 8pt),
-    table.header(
-      [*Generic Methodology Backbone*],
-      [*Pectin Case Study (Domain-Specific)*]
-    ),
+    table.header([*Generic Methodology Backbone*], [*Pectin Case Study (Domain-Specific)*]),
     [ *Conservation-Invariant ODEs* ],
     [ 4-Pool Carbohydrate Mass Fractions ($upright("P")_(upright("matrix")) arrow.r upright("P")_(upright("sol")) arrow.r upright("P")_(upright("lowMW")) arrow.r upright("P")_(upright("loss"))$) ],
 
     [ *Logarithmic Sensitivity Matrix & SVD* ],
     [ Arrhenius frequency factor ($ln A$) and activation energy ($E_a$) identifiability ],
 
-    [ *D-Optimality Criterion Maximization* ],
-    [ Informative dynamic sample extraction times ($t_1, t_2, dots, t_N$) ],
+    [ *D-Optimality Criterion Maximization* ], [ Informative dynamic sample extraction times ($t_1, t_2, dots, t_N$) ],
 
-    [ *Bayesian MCMC Posterior Sampling* ],
-    [ Informative priors from polysaccharide literature ],
+    [ *Bayesian MCMC Posterior Sampling* ], [ Informative priors from polysaccharide literature ],
 
     [ *Proxy Calibration & Noise Budgeting* ],
     [ High-throughput FTIR / $degree upright("Brix")$ calibration for yield & molecular weight ],
@@ -1095,7 +1068,7 @@ To apply this architecture to other domains, one must clearly separate the gener
     [ Statistical GP correction for non-ideal reactor mixing & side-reactions ],
 
     [ *Bayesian GP Optimization (UCB / EI)* ],
-    [ Active exploration vs. exploitation to maximize functional high-MW pectin yield ]
+    [ Active exploration vs. exploitation to maximize functional high-MW pectin yield ],
   )
 ]
 

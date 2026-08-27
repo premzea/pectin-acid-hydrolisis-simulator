@@ -317,15 +317,7 @@ $$
 $$
 This reveals why minimizing the sum of squared errors in standard regression is mathematically equivalent to maximizing the log-likelihood under an assumption of homoscedastic Gaussian noise.
 
-```mermaid
-graph TD
-  subgraph Uninformative Prior
-    A[Uniform / Broad distribution]
-  end
-  subgraph Informative Prior
-    B[Gaussian / Literature Bound]
-  end
-```
+![Comparison of Prior Distributions in Bayesian Inference: Uninformative flat uniform distribution versus physics-informed Gaussian prior](assets/priors_comparison.svg)
 * Uninformative Priors (Flat/Uniform): Used when there is no prior data for a parameter. We assign a wide uniform distribution, $p(\theta) \sim \text{Uniform}(\theta_{\min}, \theta_{\max})$, stating that any value within this range is equally probable.
 * Informative Priors: Used when leveraging historical data or physics constraints. If literature states that the activation energy for pectin hydrolysis typically falls near $85 \text{ kJ/mol}$ with a known standard deviation, we use a Gaussian prior: $p(E_{a,\text{hyd}}) \sim \mathcal{N}(\mu = 85000, \sigma^2 = 5000^2)$. This prevents the model from wasting computational cycles exploring unphysical or structurally impossible parameter regimes.
 ## Markov Chain Monte Carlo (MCMC) Sampling
