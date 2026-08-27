@@ -1,6 +1,6 @@
 #import "@preview/merman:0.2.0": *
 
-== From Mechanistic Models to Self-Learning Experimental Systems: A Bayesian Framework for Scientific Process Optimization
+== From Mechanistic Models to Self-Learning Experimental Systems: A Bayesian Framework for Scientific Process Optimization\n\n#align(center)[*Framework Version 1.0*]
 <from-mechanistic-models-to-self-learning-experimental-systems-a-bayesian-framework-for-scientific-process-optimization>
 Mechanistic Modeling, Identifiability, Optimal Experimental Design,
 Proxy Measurements, Surrogate ML, Bayesian Inference, and Closed-Loop
@@ -351,12 +351,12 @@ interchangeably. In scientific machine learning and system
 identification, they represent distinct, non-overlapping tasks.
 
 #mermaid(
-```
-graph TD
-  A["MATHEMATICAL DESIGN<br/>'Is the software correct?'"] --> B["CODE VERIFICATION<br/>Checks for bugs, typos, and<br/>numerical integration accuracy"]
-  B --> C["PHYSICAL REALITY<br/>'Is the science correct?'"]
-  C --> D["MODEL VALIDATION<br/>Compares model outputs against<br/>real experimental data"]
-```
+  ```
+  graph TD
+    A["MATHEMATICAL DESIGN<br/>'Is the software correct?'"] --> B["CODE VERIFICATION<br/>Checks for bugs, typos, and<br/>numerical integration accuracy"]
+    B --> C["PHYSICAL REALITY<br/>'Is the science correct?'"]
+    C --> D["MODEL VALIDATION<br/>Compares model outputs against<br/>real experimental data"]
+  ```,
 )
 
 == Code Verification
@@ -990,19 +990,6 @@ prevents the system from getting stuck in local optima.
   caption: [The Exploration-Exploitation Tradeoff in Bayesian Optimization: Gaussian Process surrogate posterior with 95% credible bounds (top) and Acquisition Function landscape (bottom), demonstrating Candidate A (exploitation of high mean) vs Candidate B (exploration of high uncertainty).],
 )
 
-
-#mermaid(
-  ```
-  graph LR
-    subgraph Acquisition Value alpha
-      direction LR
-      A[Exploit High Mean]
-      B[Explore High Uncertainty]
-    end
-    CandidateA[Candidate A] --> A
-    CandidateB[Candidate B] --> B
-  ```,
-)
 
 == The Autonomous Closed Loop in Practice
 <the-autonomous-closed-loop-in-practice>
