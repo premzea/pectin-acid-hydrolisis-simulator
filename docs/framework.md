@@ -50,7 +50,6 @@ graph LR
     B2 --> C2[Parameters theta]
   end
 ```
-Observations (y) + Inputs (x)  ─────────────►  Parameters (θ)    │
 The Forward Problem is mathematically deterministic and well-posed. Given a vector of operating inputs $x$ and a concrete vector of physical parameters $\theta$, we evaluate a forward operator $\mathcal{F}$ (such as an analytical equation or a numerical ODE integrator) to uniquely predict the experimental observations $y$:
 $$
 y = \mathcal{F}(x, \theta) + \epsilon
@@ -162,7 +161,6 @@ This mathematical structure guarantees that if the system initializes with non-n
 ------------------------------
 ## 4. Model Verification vs. Model Validation
 Engineers frequently conflate verification and validation, using them interchangeably. In scientific machine learning and system identification, they represent distinct, non-overlapping tasks.
-                  │```mermaid
 graph TD
   subgraph MATHEMATICAL DESIGN
     direction TB
@@ -204,16 +202,6 @@ For instance, an increase in a reaction rate constant can be almost perfectly of
 The individual parameters cannot be uniquely resolved; only their combined ratio or product is identifiable. The direction along the valley floor is known as a sloppy direction, whereas the steep walls of the valley represent stiff directions.
                    Parameter θ₂
                         ▲
-                        │       Stiff Direction
-                        │       (High sensitivity)
-                        │          ▼
-                        │       \     /
-                        │        \   /
-                        │   ──────\─/──────  ◄─── Sloppy Direction
-                        │          / \            (Parameter compensation valley)
-                        │         /   \
-                        │        /     \
-                        └────────────────────────► Parameter θ₁
 ## The Sensitivity Matrix
 The primary tool for diagnosing local identifiability is the Sensitivity Matrix, $\mathbf{S}$. It tracks how much each predicted observation $y_i$ shifts at a specific time step $t_k$ when a parameter $\theta_j$ is perturbed slightly:
 $$

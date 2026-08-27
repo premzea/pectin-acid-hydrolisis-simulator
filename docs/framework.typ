@@ -97,22 +97,12 @@ asymmetry between moving from causes to effects, versus moving from
 effects back to causes. \#\# Mathematical Definitions
 
 ```
-   ┌─────────────────────────────────────────────────────────┐
-   │                    FORWARD PROBLEM                      │
-   │                                                         │
 ```
 
-Inputs (x) + Parameters (θ) ───────────────► Observations (y) │
-└─────────────────────────────────────────────────────────┘
 
 ```
-   ┌─────────────────────────────────────────────────────────┐
-   │                    INVERSE PROBLEM                      │
-   │                                                         │
 ```
 
-Observations (y) + Inputs (x) ─────────────► Parameters (θ) │
-└─────────────────────────────────────────────────────────┘
 
 The Forward Problem is mathematically deterministic and well-posed.
 Given a vector of operating inputs $x$ and a concrete vector of physical
@@ -339,30 +329,9 @@ interchangeably. In scientific machine learning and system
 identification, they represent distinct, non-overlapping tasks.
 
 ```
-              ┌─────────────────────────────────────────┐
-              │          MATHEMATICAL DESIGN            │
-              │       "Is the software correct?"        │
-              └────────────────────┬────────────────────┘
-                                   │
                                    ▼
-                   ┌───────────────────────────────┐
-                   │       CODE VERIFICATION       │
-                   │   Checks for bugs, typos, and │
-                   │    numerical integration accuracy.│
-                   └───────────────┬───────────────┘
-                                   │
                                    ▼
-              ┌─────────────────────────────────────────┐
-              │            PHYSICAL REALITY             │
-              │        "Is the science correct?"        │
-              └────────────────────┬────────────────────┘
-                                   │
                                    ▼
-                   ┌───────────────────────────────┐
-                   │       MODEL VALIDATION        │
-                   │   Compares model outputs against  │
-                   │     real experimental data.   │
-                   └───────────────────────────────┘
 ```
 
 == Code Verification
@@ -448,17 +417,6 @@ the valley represent stiff directions.
 ```
                Parameter θ₂
                     ▲
-                    │       Stiff Direction
-                    │       (High sensitivity)
-                    │          │
-                    │          ▼
-                    │       \     /
-                    │        \   /
-                    │   ──────\─/──────  ◄─── Sloppy Direction
-                    │          / \            (Parameter compensation valley)
-                    │         /   \
-                    │        /     \
-                    └────────────────────────► Parameter θ₁
 ```
 
 == The Sensitivity Matrix
@@ -713,7 +671,6 @@ under an assumption of homoscedastic Gaussian noise. \#\# Informative
 vs.~Uninformative Priors The choice of prior defines the starting point
 of our learning system:
 
-Probability Density ▲ │#mermaid(
 ```
 graph TD
   subgraph Uninformative Prior
@@ -789,10 +746,6 @@ instantaneous indicators that can be monitored continuously online
 Solids via Refractive Index ($""^compose upright("Brix")$), online fluid
 density, or simple medium $upright("pH")$).
 
-┌────────────────────────┐ ┌────────────────────────┐ │ TRUE METRIC │ │
-PROXY INDICATOR │ │ High-MW Pectin Pool │ │ FTIR Spectrum Abs. │ │
-(Slow, Expensive) │◄──────────────►│ (Fast, Inexpensive) │
-└────────────────────────┘ Calibration └────────────────────────┘ Model
 
 == Mathematical Calibration Mappings
 <mathematical-calibration-mappings>
