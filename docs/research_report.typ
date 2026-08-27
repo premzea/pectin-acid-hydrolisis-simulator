@@ -48,7 +48,8 @@ $
 text("Mechanistic Model") 
 arrow.r text("Synthetic Recovery") 
 arrow.r text("OED") 
-arrow.r text("Proxy Calibration") 
+arrow.r text("Proxy Calibration") \
+  
 arrow.r text("Physical Experiment") 
 arrow.r text("Bayesian Update")
 arrow.r text("Optimization")
