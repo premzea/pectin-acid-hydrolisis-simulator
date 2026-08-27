@@ -1061,38 +1061,39 @@ these steps autonomously:
 <methodological-mapping>
 To apply this architecture to other domains, one must clearly separate the generic mathematical framework from the domain-specific parameters of the pectin application.
 
-#mermaid(
-```
-graph LR
-  subgraph Generic["Generic Methodology Backbone"]
-    direction TB
-    A["Conservation Invariant<br/>ODEs"]
-    B["Logarithmic Sensitivity<br/>Matrix & SVD"]
-    C["D-Optimality Criterion<br/>Maximization"]
-    D["Bayesian MCMC<br/>Posterior Sampling"]
-    E["Proxy Calibration &<br/>Noise Budgeting"]
-    F["Kennedy-O'Hagan<br/>Discrepancy Capture"]
-    G["Bayesian GP Optimization<br/>(UCB / EI)"]
-  end
-  subgraph Specific["Pectin Case Study (Domain-Specific)"]
-    direction TB
-    A2["4-Pool Carbohydrate<br/>Mass Fractions"]
-    B2["Arrhenius Frequency &<br/>Activation Energy"]
-    C2["Dynamic Sample<br/>Extraction Times"]
-    D2["Prior Estimates from<br/>Polysaccharide Literature"]
-    E2["FTIR Absorbance<br/>Fingerprints for Yield"]
-    F2["Correcting for Imperfect<br/>Reactor Mixing"]
-    G2["Maximizing High-MW<br/>Pectin Yield"]
-  end
-  A -.-> A2
-  B -.-> B2
-  C -.-> C2
-  D -.-> D2
-  E -.-> E2
-  F -.-> F2
-  G -.-> G2
-```
-)
+#align(center)[
+  #table(
+    columns: (1fr, 1.2fr),
+    stroke: 0.5pt + luma(180),
+    fill: (col, row) => if row == 0 { rgb("eef3f8") } else { none },
+    align: (col, row) => (left + horizon),
+    inset: (x: 10pt, y: 8pt),
+    table.header(
+      [*Generic Methodology Backbone*],
+      [*Pectin Case Study (Domain-Specific)*]
+    ),
+    [ *Conservation-Invariant ODEs* ],
+    [ 4-Pool Carbohydrate Mass Fractions ($upright("P")_(upright("matrix")) arrow.r upright("P")_(upright("sol")) arrow.r upright("P")_(upright("lowMW")) arrow.r upright("P")_(upright("loss"))$) ],
+
+    [ *Logarithmic Sensitivity Matrix & SVD* ],
+    [ Arrhenius frequency factor ($ln A$) and activation energy ($E_a$) identifiability ],
+
+    [ *D-Optimality Criterion Maximization* ],
+    [ Informative dynamic sample extraction times ($t_1, t_2, dots, t_N$) ],
+
+    [ *Bayesian MCMC Posterior Sampling* ],
+    [ Informative priors from polysaccharide literature ],
+
+    [ *Proxy Calibration & Noise Budgeting* ],
+    [ High-throughput FTIR / $degree upright("Brix")$ calibration for yield & molecular weight ],
+
+    [ *Kennedy–O'Hagan Discrepancy Capture* ],
+    [ Statistical GP correction for non-ideal reactor mixing & side-reactions ],
+
+    [ *Bayesian GP Optimization (UCB / EI)* ],
+    [ Active exploration vs. exploitation to maximize functional high-MW pectin yield ]
+  )
+]
 
 The core mathematical architecture of this self-learning system is
 universal. By replacing the pectin ODEs with thermodynamic, electrical,
