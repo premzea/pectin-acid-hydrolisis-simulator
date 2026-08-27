@@ -1,0 +1,3 @@
+sample_id,run_id,quench_time_min,volume_withdrawn_mL,aliquot_yield_pct,assay_DE_pct,assay_Mw_Da,assay_GalA_pct
+S_001_15m,R001,15.2,15.0,12.5,72.1,610000,77.5
+S_001_45m,R001,45.1,15.0,22.4,65.0,450000,77.2

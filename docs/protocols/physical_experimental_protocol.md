@@ -7,16 +7,16 @@
 ## 1. Feedstock Characterization (Batch Identity)
 The computational stress test proved that variations in starting protopectin mass, esterification, and molecular weight heavily influence the signal-to-noise ratio of the kinetic inference. Feedstock properties are not optional metadata; they are **mandatory model inputs**.
 
-For every experimental batch (e.g., `B001`, `B002`), the following must be characterized before any extraction runs:
+For every experimental batch (e.g., `B001`, `B002`), the following must be characterized before any extraction runs. Note the critical distinction between measurable *reference extracts* and unmeasurable *latent matrix* properties.
 
 | Property | Symbol | Importance | Analytical Target |
 |:---|:---:|:---|:---|
-| **Available Pectin** | $P_{matrix,0}$ | Critical (scales entire yield signal) | Gravimetric/Alcohol Insoluble Residue |
-| **Matrix MW** | $M_{w,matrix}$ | Critical (dictates hydrolysis precision) | HPSEC-MALLS or Viscometry |
-| **Matrix DE** | $DE_{matrix}$ | Critical (dictates de-esterification precision)| Titration or FTIR |
-| **GalA Fraction** | $X_{GalA,matrix}$ | High (purity baseline) | Carbazole assay / Colorimetric |
-| **Moisture** | $X_{w,0}$ | Baseline normalization | Moisture analyzer (e.g., 105 °C to constant mass) |
-| **Particle Size** | $d_{50}$ | Empirical mass transfer scaling | Laser diffraction or standard sieves |
+| **Available Pectin** | $P_{matrix,0}$ | Critical | Must use a pectin-specific proxy (e.g., GalA content of AIR). Unadjusted Alcohol Insoluble Residue ($P_{AIR}$) overestimates pectin due to neutral sugars. |
+| **Reference MW** | $M_{w,reference}$ | Critical | Measures MW of a standard mild extract to anchor the latent model property $M_{w,matrix}$. (Direct intact SEC is impossible). |
+| **Reference DE** | $DE_{reference}$ | Critical | Measures DE of a standard mild extract to anchor latent $DE_{matrix}$. |
+| **GalA Fraction** | $X_{GalA,product}$ | High | Carbazole/mHDP colorimetry on standard extract. (Must be validated against neutral sugar interference). |
+| **Moisture** | $X_{w,0}$ | Baseline | Moisture analyzer (e.g., 105 °C to constant mass) |
+| **Particle Size** | $d_{50}$ | Empirical | Laser diffraction or standard sieves |
 
 ---
 
@@ -30,52 +30,50 @@ The kinetic integration $\tau_k = \int_0^t k(T(s),pH(s))\,ds$ requires exact the
 * **Agitation**: Sufficient to ensure uniform suspension (preventing localized thermal/pH gradients).
 
 ### B. Sampling Subsystem
-Endpoint-only measurements cannot resolve the hydrolysis/degradation cascade tradeoff. Time-resolved sampling is a core capability.
-* **Non-destructive withdrawal**: Ability to pull samples without altering the remaining reactor volume ratio or heat transfer.
+* **Non-destructive withdrawal**: Sample withdrawal affects the $S:L$ ratio. Either keep cumulative sampled volume $<5\%$ of total volume, or explicitly record `volume_withdrawn_mL` for every sample to update the mass/volume conservation equations.
 * **Rapid Quenching**: Extracted samples must be immediately quenched (e.g., rapid cooling to < 20 °C or neutralization) to lock the exact reaction time $t$.
 * **Traceability**: Precise timestamping of the exact quench time, not the nominal intended time.
 
 ---
 
-## 3. The 14-Run Campaign Architecture
-The experimental campaign utilizes an 8-10 run calibration set, plus 2-4 genuinely independent validation runs to test interpolation and feedstock generalization.
+## 3. The Time-Resolved Calibration Campaign
+The original OED assumed single-endpoint observations. The physical design embraces **time-resolved** observation (measuring at $t=15, 45, 90, 120$ min). Re-running the D-optimal design solver over the time-resolved trajectory yielded the following verbatim 10-run protocol ($\kappa = 27.0$).
 
-### Calibration Set (Batch A)
-Execute the exact 10-run D-optimal design to maximize information entropy and decorrelate activation energies. 
+### Calibration Set (Distributed over Batches A & B)
+To estimate kinetics robustly across feedstock variations, distribute these 10 runs across at least two feedstock batches.
 
-| Run | T (°C) | pH | t (min) | d₅₀ (µm) | Purpose |
+| Run | T (°C) | pH | d₅₀ (µm) | Sample Times (min) |
+|:---:|:---:|:---:|:---:|:---|
+| 1 | 95 | 1.5 | 600 | 15, 45, 90, 120 |
+| 2 | 50 | 1.5 | 150 | 15, 45, 90, 120 |
+| 3 | 95 | 2.5 | 150 | 15, 45, 90, 120 |
+| 4 | 50 | 1.5 | 600 | 15, 45, 90, 120 |
+| 5 | 95 | 2.0 | 600 | 15, 45, 90, 120 |
+| 6 | 50 | 2.0 | 150 | 15, 45, 90, 120 |
+| 7 | 95 | 2.5 | 600 | 15, 45, 90, 120 |
+| 8 | 50 | 1.5 | 300 | 15, 45, 90, 120 |
+| 9 | 95 | 3.0 | 150 | 15, 45, 90, 120 |
+| 10 | 95 | 2.0 | 300 | 15, 45, 90, 120 |
+
+### Validation Set (Batch C - Independent Feedstock)
+To rigorously test if the digital twin generalizes (i.e. distinguishing kinetic variation from feedstock variation), the validation runs should be performed on a completely independent feedstock batch.
+
+| Run | T (°C) | pH | d₅₀ (µm) | Sample Times | Validation Objective |
 |:---:|:---:|:---:|:---:|:---:|:---|
-| 1-2 | 50, 95 | 1.5, 2.5 | 45, 90 | 600 | Temperature/pH boundary pairings |
-| 3-4 | 50, 95 | 1.5, 1.5 | 120, 20 | 300 | Asymmetric time extremes |
-| 5-7 | 95, 50, 95 | 3.0, 2.0, 2.0 | 90, 45, 20 | 150-600 | Extreme pairing anchors |
-| 8-10| 50, 50, 95 | 2.0, 1.5, 1.5 | 120, 120, 20 | 600-150 | Particle size / low-T extended |
-
-### Validation Set (Batch A & Batch B)
-Hold out 4 runs from the calibration algorithm to test scientific generalization.
-
-| Run | Feedstock | T (°C) | pH | t (min) | d₅₀ (µm) | Validation Objective |
-|:---:|:---:|:---:|:---:|:---:|:---:|:---|
-| 11 | **Batch A** | 75 | 2.2 | 60 | 300 | **Interior Interpolation** (Center-point test) |
-| 12 | **Batch A** | 85 | 1.8 | 40 | 300 | **Near-Optimum** (Test trajectory toward high yield) |
-| 13 | **Batch B** | 90 | 1.5 | 90 | 150 | **Severity Edge / Feedstock Generalization** (Test degradation cascade on new material) |
-| 14 | **Batch B** | 60 | 2.8 | 120| 600 | **Low-Yield Edge / Feedstock Generalization** (Test extraction limit on new material) |
+| 11 | 75 | 2.2 | 300 | 15, 45, 90, 120 | **Interior Interpolation** (Center-point test) |
+| 12 | 85 | 1.8 | 300 | 15, 45, 90, 120 | **Near-Optimum** (Trajectory toward high yield) |
+| 13 | 90 | 1.5 | 150 | 15, 45, 90, 120 | **Severity Edge** (Test degradation cascade) |
 
 ---
 
-## 4. Time-Course Sampling Plan & Assays
-To resolve the $k_{hyd} \leftrightarrow k_{deg}$ ambiguity while managing analytical costs, the sampling schedule is asymmetric.
+## 4. Analytical Assays
+For every timestamped sample aliquot (15, 45, 90, 120 min), measure the following:
 
-For each reactor run (e.g., a 120-minute run), draw samples at specific intervals.
-
-| Sampling Stage | Target Time (min) | Gravimetric Yield ($Y$) | Degree of Esterification ($DE$) | Molecular Weight ($M_w$) |
-|:---|:---:|:---:|:---:|:---:|
-| **Early** | 10 - 20 | ✓ | ✓ | ✓ |
-| **Intermediate** | 45 - 60 | ✓ | ✓ | [Reserve sample, do not assay initially] |
-| **Late** | 90 - 120 | ✓ | ✓ | ✓ |
-
-*Rationale:* 
-* Yield and DE are relatively fast/cheap assays and should be tracked continuously to capture extraction and de-esterification kinetics.
-* MW ($M_w$) via SEC/GPC is expensive and slow. Measuring early and late bounds the hydrolysis rate. Intermediate samples are physically taken and quenched, but only analyzed if the model fit shows high residual uncertainty in the intermediate trajectory.
+| Observable | Purpose | Assay Target Noise |
+|:---|:---|:---|
+| **Aliquot Yield Concentration** | Tracks extraction progress. Distinct from final bulk gravimetric yield. | $\sigma \approx 1\%$ absolute |
+| **DE (Degree of Esterification)** | Directly calibrates $k_{de}$. Very strong signal. | $\sigma \approx 2\%$ absolute |
+| **MW (Molecular Weight)** | Breaks the $k_{hyd} \leftrightarrow k_{deg}$ ambiguity. | $\sigma \approx 15,000$ Da |
 
 ### Analytical Noise Targets
 The experimental protocols for the assays should be engineered to meet or exceed these historical variances:

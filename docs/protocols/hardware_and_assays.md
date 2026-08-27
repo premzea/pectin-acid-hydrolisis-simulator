@@ -23,19 +23,21 @@ The reactor must prioritize thermal logging, rapid sampling, and precise pH cont
 
 To achieve the necessary signal-to-noise ratio for Bayesian parameter inference, the analytical assays must hit strict variance targets.
 
-### A. Gravimetric Yield ($Y$)
+### A. Time-Resolved Yield Proxy ($Y(t)$)
 **Target**: $\sigma \approx 1\%$ absolute.
-* **Method**: Alcohol Insoluble Residue (AIR) precipitation.
+* **Method**: Alcohol Insoluble Residue (AIR) precipitation on aliquots.
+* **Distinction**: This is a time-resolved measurement of extraction concentration/proxy. The *final* bulk gravimetric yield is determined separately after standard downstream recovery.
 * **Procedure**: 
-  1. Add 2 volumes of 96% ethanol to the quenched, filtered liquid sample to precipitate pectin.
-  2. Allow to stand at 4 °C for 2 hours.
-  3. Centrifuge, wash pellet twice with 70% ethanol to remove soluble sugars and acids.
-  4. Dry pellet at 60 °C to constant mass.
-* **Note**: Do not dry at > 80 °C to prevent thermal degradation of the dried product prior to downstream analysis.
+  1. Record exact `volume_withdrawn_mL` for the sample (must be kept small to ensure total sampled volume < 5% of reactor, preserving the S:L ratio).
+  2. Add 2 volumes of 96% ethanol to the quenched, filtered liquid sample to precipitate pectin.
+  3. Allow to stand at 4 °C for 2 hours.
+  4. Centrifuge, wash pellet twice with 70% ethanol to remove soluble sugars and acids.
+  5. Dry pellet at 60 °C to constant mass.
 
 ### B. Degree of Esterification ($DE$)
 **Target**: $\sigma \approx 2\%$ absolute.
 * **Method**: Titrimetric (USP monographs / FAO JECFA) or FTIR.
+* **Latent Note**: When performed on a standard mild extract, this establishes $DE_{reference}$, anchoring the unmeasurable matrix latent property $DE_{matrix}$.
 * **Procedure (Titration)**:
   1. Dissolve 0.1 g of dried pectin in CO2-free water. Add phenol red indicator.
   2. Titrate with 0.1 M NaOH to the end point ($V_1$, free carboxyl groups).
@@ -47,17 +49,13 @@ To achieve the necessary signal-to-noise ratio for Bayesian parameter inference,
 ### C. Molecular Weight ($M_w$)
 **Target**: $\sigma \approx 15,000$ Da.
 * **Method**: HPSEC-MALLS (High-Performance Size Exclusion Chromatography with Multi-Angle Laser Light Scattering) coupled with Refractive Index (RI) detection.
-* **Why MALLS?**: Standard SEC relies on pullulan or dextran calibration curves, which structurally differ from pectin, leading to massive systematic error ($\delta_{model}$). MALLS measures absolute $M_w$ independently of standards.
-* **Buffer**: 0.1 M NaNO3 or 0.1 M LiNO3 to prevent pectin aggregation in the column.
+* **Latent Note**: HPSEC requires a soluble sample. Standard extractions establish $M_{w,reference}$ which acts as an anchor for the latent $M_{w,matrix}$.
 
 ### D. Galacturonic Acid Fraction ($X_{GalA}$)
 **Target**: $\sigma \approx 2-3\%$.
 * **Method**: m-hydroxydiphenyl (mHDP) colorimetric assay (Blumenkrantz & Asboe-Hansen, 1973).
-* **Procedure**:
-  1. Hydrolyze pectin completely to monomers using concentrated sulfuric acid/tetraborate on ice, then heat at 100 °C for 5 min.
-  2. Add mHDP reagent; measure absorbance at 520 nm.
-  3. Compare against a pure D-galacturonic acid standard curve.
-  4. Carbazole assay is an acceptable alternative but more prone to interference from neutral sugars.
+* **Interference Risk**: Classic colorimetric uronic acid methods are susceptible to carbohydrate interference from neutral sugars in the cell wall matrix. The specific assay protocol requires its own validation against the expected passion fruit sugar matrix.
+* **Definition**: $X_{GalA} = \frac{\text{GalA mass}}{\text{pectin product mass}}$
 
 ---
 

@@ -1,0 +1,2 @@
+run_id,batch_id,reactor_vol_L,solid_mass_kg,nominal_T,nominal_pH,process_log_file
+R001,B001,1.0,0.05,95.0,1.5,process_log_R001.csv
