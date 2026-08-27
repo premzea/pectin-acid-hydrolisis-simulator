@@ -163,16 +163,9 @@ This mathematical structure guarantees that if the system initializes with non-n
 Engineers frequently conflate verification and validation, using them interchangeably. In scientific machine learning and system identification, they represent distinct, non-overlapping tasks.
 ```mermaid
 graph TD
-  subgraph MATHEMATICAL DESIGN
-    direction TB
-    A[Is the software correct?] --> B[CODE VERIFICATION]
-    B --> C[Checks for bugs, typos, and numerical integration accuracy]
-  end
-  subgraph PHYSICAL REALITY
-    direction TB
-    D[Is the science correct?] --> E[MODEL VALIDATION]
-    E --> F[Compares model outputs against real experimental data]
-  end
+  A["MATHEMATICAL DESIGN<br/>'Is the software correct?'"] --> B["CODE VERIFICATION<br/>Checks for bugs, typos, and<br/>numerical integration accuracy"]
+  B --> C["PHYSICAL REALITY<br/>'Is the science correct?'"]
+  C --> D["MODEL VALIDATION<br/>Compares model outputs against<br/>real experimental data"]
 ```
 ## Code Verification
 Verification asks: "Did we build the model right?" It is a purely mathematical and software engineering exercise. It verifies that the computer code accurately solves the intended underlying differential equations without numerical errors, typos, or software bugs.
