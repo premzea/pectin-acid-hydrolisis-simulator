@@ -19,7 +19,7 @@ prohibitively costly. Furthermore, physical observations are invariably
 corrupted by sensor noise, and our model parameters carry deep,
 intrinsic uncertainties. If we cannot quantify what our models do not
 know, we risk making catastrophic or highly sub-optimal decisions during
-process scale-up. 
+process scale-up.
 == The Central Philosophy To overcome these
 limitations, we must abandon the naive paradigm of treating a physical
 system as a black box---where one simply collects a fixed grid of data,
@@ -37,19 +37,19 @@ The self-learning framework is cyclical and adaptive. It tightly couples
 physical intuition with statistical rigor across ten core phases:
 
 #mermaid(
-```
-graph TD
-  A[Mechanistic Model Formulation] --> B[Numerical Verification & Sanity Checks]
-  B --> C[Identifiability Analysis SVD / FIM]
-  C --> D[Optimal Experimental Design OED]
-  D --> E[Executing Physical Experiments]
-  E --> F[Proxy / Measurement Calibration Models]
-  F --> G[Bayesian Parameter Inference MCMC]
-  G --> H[Model Discrepancy & Validation Assessments]
-  H --> I[Uncertainty-Aware Optimization & ML Surrogates]
-  I --> J[Active Learning / Next-Best Action Selection]
-  J -->|Loop Back to OED| D
-```
+  ```
+  graph TD
+    A[Mechanistic Model Formulation] --> B[Numerical Verification & Sanity Checks]
+    B --> C[Identifiability Analysis SVD / FIM]
+    C --> D[Optimal Experimental Design OED]
+    D --> E[Executing Physical Experiments]
+    E --> F[Proxy / Measurement Calibration Models]
+    F --> G[Bayesian Parameter Inference MCMC]
+    G --> H[Model Discrepancy & Validation Assessments]
+    H --> I[Uncertainty-Aware Optimization & ML Surrogates]
+    I --> J[Active Learning / Next-Best Action Selection]
+    J -->|Loop Back to OED| D
+  ```,
 )
 
 == Roles and Interactions of the Core Components
@@ -96,45 +96,37 @@ To design a self-learning system, one must master the mathematical
 asymmetry between moving from causes to effects, versus moving from
 effects back to causes. \#\# Mathematical Definitions
 
-```
-```
-
-
-```
-```
-
-
 #mermaid(
-```
-graph LR
-  subgraph FORWARD PROBLEM
-    direction LR
-    A[Inputs x + Parameters theta] --> B[Model]
-    B --> C[Observations y]
-  end
-  subgraph INVERSE PROBLEM
-    direction LR
-    A2[Observations y + Inputs x] --> B2[Algorithm]
-    B2 --> C2[Parameters theta]
-  end
-```
+  ```
+  graph LR
+    subgraph FORWARD PROBLEM
+      direction LR
+      A[Inputs x + Parameters theta] --> B[Model]
+      B --> C[Observations y]
+    end
+    subgraph INVERSE PROBLEM
+      direction LR
+      A2[Observations y + Inputs x] --> B2[Algorithm]
+      B2 --> C2[Parameters theta]
+    end
+  ```,
 )
 
 
 #mermaid(
-```
-graph LR
-  subgraph FORWARD PROBLEM
-    direction LR
-    A[Inputs x + Parameters theta] --> B[Model]
-    B --> C[Observations y]
-  end
-  subgraph INVERSE PROBLEM
-    direction LR
-    A2[Observations y + Inputs x] --> B2[Algorithm]
-    B2 --> C2[Parameters theta]
-  end
-```
+  ```
+  graph LR
+    subgraph FORWARD PROBLEM
+      direction LR
+      A[Inputs x + Parameters theta] --> B[Model]
+      B --> C[Observations y]
+    end
+    subgraph INVERSE PROBLEM
+      direction LR
+      A2[Observations y + Inputs x] --> B2[Algorithm]
+      B2 --> C2[Parameters theta]
+    end
+  ```,
 )
 The Forward Problem is mathematically deterministic and well-posed.
 Given a vector of operating inputs $x$ and a concrete vector of physical
@@ -185,7 +177,9 @@ broken down into functional polymers, and ultimately destroyed by
 over-hydrolysis. We represent this via a four-pool structural kinetic
 cascade:
 
-$ upright("P")_(upright("matrix")) arrow.r^(k_(upright("ext"))) upright("P")_(upright("sol")) arrow.r^(k_(upright("hyd"))) upright("P")_(upright("lowMW")) arrow.r^(k_(upright("deg"))) upright("P")_(upright("loss")) $
+$
+  upright("P")_(upright("matrix")) arrow.r^(k_(upright("ext"))) upright("P")_(upright("sol")) arrow.r^(k_(upright("hyd"))) upright("P")_(upright("lowMW")) arrow.r^(k_(upright("deg"))) upright("P")_(upright("loss"))
+$
 
 Where:
 
@@ -277,16 +271,22 @@ Applying this formal structure to our acid-hydrolysis cascade, we define
 our four states as mass fractions normalized to the total initial
 insoluble protopectin available in the peel matrix:
 
-$ upright(bold(w))\(t\)= mat(delim: "[", P_(upright("matrix"))\(t\); P_(upright("sol"))\(t\); P_(upright("lowMW"))\(t\); P_(upright("loss"))\(t\)) $
+$
+  upright(bold(w))\(t\)= mat(delim: "[", P_(upright("matrix"))\(t\); P_(upright("sol"))\(t\); P_(upright("lowMW"))\(t\); P_(upright("loss"))\(t\))
+$
 
 The governing system of non-linear differential equations is formulated
 as:
 
 $ frac(d P_(upright("matrix")), d t) = - k_(upright("ext"))\(T\,d_p\)dot.op P_(upright("matrix")) $
 
-$ frac(d P_(upright("sol")), d t) = k_(upright("ext"))\(T\,d_p\)dot.op P_(upright("matrix")) - k_(upright("hyd"))\(T\,upright("pH")\)dot.op P_(upright("sol")) $
+$
+  frac(d P_(upright("sol")), d t) = k_(upright("ext"))\(T\,d_p\)dot.op P_(upright("matrix")) - k_(upright("hyd"))\(T\,upright("pH")\)dot.op P_(upright("sol"))
+$
 
-$ frac(d P_(upright("lowMW")), d t) = k_(upright("hyd"))\(T\,upright("pH")\)dot.op P_(upright("sol")) - k_(upright("deg"))\(T\,upright("pH")\)dot.op P_(upright("lowMW")) $
+$
+  frac(d P_(upright("lowMW")), d t) = k_(upright("hyd"))\(T\,upright("pH")\)dot.op P_(upright("sol")) - k_(upright("deg"))\(T\,upright("pH")\)dot.op P_(upright("lowMW"))
+$
 
 $ frac(d P_(upright("loss")), d t) = k_(upright("deg"))\(T\,upright("pH")\)dot.op P_(upright("lowMW")) $
 
@@ -295,11 +295,17 @@ constants follow a modified Arrhenius formulation to capture the
 non-linear impacts of Temperature ($T$, in Kelvin) and chemical
 catalysts ($upright("pH")$ or particle size $d_p$):
 
-$ k_(upright("ext"))\(T\,d_p\)= A_(upright("ext")) dot.op (1 / d_p)^alpha dot.op exp (- frac(E_(a\,upright("ext")), R dot.op T)) $
+$
+  k_(upright("ext"))\(T\,d_p\)= A_(upright("ext")) dot.op (1 / d_p)^alpha dot.op exp (- frac(E_(a\,upright("ext")), R dot.op T))
+$
 
-$ k_(upright("hyd"))\(T\,upright("pH")\)= A_(upright("hyd")) dot.op (10^(- upright("pH")))^beta dot.op exp (- frac(E_(a\,upright("hyd")), R dot.op T)) $
+$
+  k_(upright("hyd"))\(T\,upright("pH")\)= A_(upright("hyd")) dot.op (10^(- upright("pH")))^beta dot.op exp (- frac(E_(a\,upright("hyd")), R dot.op T))
+$
 
-$ k_(upright("deg"))\(T\,upright("pH")\)= A_(upright("deg")) dot.op (10^(- upright("pH")))^gamma dot.op exp (- frac(E_(a\,upright("deg")), R dot.op T)) $
+$
+  k_(upright("deg"))\(T\,upright("pH")\)= A_(upright("deg")) dot.op (10^(- upright("pH")))^gamma dot.op exp (- frac(E_(a\,upright("deg")), R dot.op T))
+$
 
 Where $R$ is the universal gas constant, $A_i$ are the pre-exponential
 frequency factors, $E_(a\,i)$ are the activation energies, and
@@ -361,26 +367,20 @@ interchangeably. In scientific machine learning and system
 identification, they represent distinct, non-overlapping tasks.
 
 #mermaid(
-```
-graph TD
-  subgraph MATHEMATICAL DESIGN
-    direction TB
-    A[Is the software correct?] --> B[CODE VERIFICATION]
-    B --> C[Checks for bugs, typos, and numerical integration accuracy]
-  end
-  subgraph PHYSICAL REALITY
-    direction TB
-    D[Is the science correct?] --> E[MODEL VALIDATION]
-    E --> F[Compares model outputs against real experimental data]
-  end
-```
+  ```
+  graph TD
+    subgraph MATHEMATICAL DESIGN
+      direction TB
+      A[Is the software correct?] --> B[CODE VERIFICATION]
+      B --> C[Checks for bugs, typos, and numerical integration accuracy]
+    end
+    subgraph PHYSICAL REALITY
+      direction TB
+      D[Is the science correct?] --> E[MODEL VALIDATION]
+      E --> F[Compares model outputs against real experimental data]
+    end
+  ```,
 )
-
-```
-                                   ▼
-                                   ▼
-                                   ▼
-```
 
 == Code Verification
 <code-verification>
@@ -463,13 +463,13 @@ valley floor is known as a sloppy direction, whereas the steep walls of
 the valley represent stiff directions.
 
 #mermaid(
-```
-graph TD
-  subgraph Parameter Identifiability SVD
-    A[Stiff Direction: High Sensitivity] --- B((Parameter Estimate))
-    B --- C[Sloppy Direction: Parameter compensation valley]
-  end
-```
+  ```
+  graph TD
+    subgraph Parameter Identifiability SVD
+      A[Stiff Direction: High Sensitivity] --- B((Parameter Estimate))
+      B --- C[Sloppy Direction: Parameter compensation valley]
+    end
+  ```,
 )
 
 
@@ -501,7 +501,9 @@ across all sample points and factors in the instrument's measurement
 uncertainty. Assuming independent, identically distributed Gaussian
 measurement noise with variance $sigma^2$, the FIM is computed as:
 
-$ upright(bold(F)) = upright(bold(S))^T upright(bold(W)) upright(bold(S)) = 1 / sigma^2 upright(bold(S))^T upright(bold(S)) $
+$
+  upright(bold(F)) = upright(bold(S))^T upright(bold(W)) upright(bold(S)) = 1 / sigma^2 upright(bold(S))^T upright(bold(S))
+$
 
 Where $upright(bold(W))$ is a weighting matrix (typically the inverse of
 the noise covariance matrix). The FIM holds a profound physical meaning:
@@ -552,7 +554,9 @@ optimization algorithms often uncover a massive, near-perfect linear
 correlation ($r > 0.99$) between the pre-exponential frequency factor
 and the activation energy within the hydrolysis and degradation loops:
 
-$ ln A_(upright("hyd")) arrow.l.r E_(a\,upright("hyd")) quad upright("and") quad ln A_(upright("deg")) arrow.l.r E_(a\,upright("deg")) $
+$
+  ln A_(upright("hyd")) arrow.l.r E_(a\,upright("hyd")) quad upright("and") quad ln A_(upright("deg")) arrow.l.r E_(a\,upright("deg"))
+$
 
 Physically, this occurs because experiments are often conducted across a
 relatively narrow temperature window (e.g., $70^compose upright("C")$ to
@@ -594,20 +598,30 @@ $Phi\(upright(bold(F))\)$ to be optimized:
 #figure(
   align(center)[#table(
     columns: (33.33%, 33.33%, 33.33%),
-    align: (auto,auto,auto,),
-    table.header([Criterion], [Mathematical Formulation], [Physical
-      Optimization Objective],),
+    align: (auto, auto, auto),
+    table.header(
+      [Criterion],
+      [Mathematical Formulation],
+      [Physical
+        Optimization Objective],
+    ),
     table.hline(),
-    [D-Optimality], [$max ln det\(upright(bold(F))\)$], [Minimizes the
-    total volume of the parameter confidence ellipsoid.],
-    [A-Optimality], [$min upright("Tr")\(upright(bold(F))^(- 1)\)$], [Minimizes
-    the average variance of the parameter estimates.],
-    [E-Optimality], [$max lambda_min\(upright(bold(F))\)$], [Maximizes
-    the minimum eigenvalue, directly shortening the longest (sloppiest)
-    uncertainty axis.],
-  )]
-  , kind: table
-  )
+    [D-Optimality],
+    [$max ln det\(upright(bold(F))\)$],
+    [Minimizes the
+      total volume of the parameter confidence ellipsoid.],
+    [A-Optimality],
+    [$min upright("Tr")\(upright(bold(F))^(- 1)\)$],
+    [Minimizes
+      the average variance of the parameter estimates.],
+    [E-Optimality],
+    [$max lambda_min\(upright(bold(F))\)$],
+    [Maximizes
+      the minimum eigenvalue, directly shortening the longest (sloppiest)
+      uncertainty axis.],
+  )],
+  kind: table,
+)
 
 == Why D-Optimality is Preferred Numerically
 <why-d-optimality-is-preferred-numerically>
@@ -672,7 +686,9 @@ constraints:
 
 $ max_(upright(bold(x)) in cal(X)) ln det upright(bold(F))\(upright(bold(x))\) $
 
-$ upright("Subject to: ") cases(delim: "{", 2.0 lt.eq upright("pH") lt.eq 4.5 & upright("(Corrosion/safety boundary)"), 60^compose upright("C") lt.eq T lt.eq 100^compose upright("C") & upright("(Atmospheric boiling limits)"), Delta t_(upright("sampling")) gt.eq 2 upright(" min") & upright("(Human/autosampler speed limits)")) $
+$
+  upright("Subject to: ") cases(delim: "{", 2.0 lt.eq upright("pH") lt.eq 4.5 & upright("(Corrosion/safety boundary)"), 60^compose upright("C") lt.eq T lt.eq 100^compose upright("C") & upright("(Atmospheric boiling limits)"), Delta t_(upright("sampling")) gt.eq 2 upright(" min") & upright("(Human/autosampler speed limits)"))
+$
 
 == 7. Bayesian Inference from First Principles
 <bayesian-inference-from-first-principles>
@@ -707,18 +723,24 @@ Where:
 Let our real physical observations at discrete times be corrupted by
 independent Gaussian measurement noise:
 
-$ y_(upright("observed"))\(t_k\)= y_(upright("model"))\(t_k\,bold(theta)\)+ epsilon.alt_k\,quad epsilon.alt_k tilde.op cal(N)\(0\,sigma^2\) $
+$
+  y_(upright("observed"))\(t_k\)= y_(upright("model"))\(t_k\,bold(theta)\)+ epsilon.alt_k\,quad epsilon.alt_k tilde.op cal(N)\(0\,sigma^2\)
+$
 
 The likelihood of observing a dataset of $N$ measurements given the
 parameter vector $bold(theta)$ is computed by taking the product of
 their individual Gaussian probability densities:
 
-$ p\(D divides bold(theta)\,sigma\)= product_(k = 1)^N 1 / sqrt(2 pi sigma^2) exp (- frac((y_(upright("observed")) \( t_k \) - y_(upright("model")) \( t_k \, bold(theta) \))^2, 2 sigma^2)) $
+$
+  p\(D divides bold(theta)\,sigma\)= product_(k = 1)^N 1 / sqrt(2 pi sigma^2) exp (- frac((y_(upright("observed")) \( t_k \) - y_(upright("model")) \( t_k \, bold(theta) \))^2, 2 sigma^2))
+$
 
 Taking the natural logarithm turns this product into a computationally
 stable sum of squares:
 
-$ ln p\(D divides bold(theta)\,sigma\)= - N / 2 ln\(2 pi\)- N ln\(sigma\)- frac(1, 2 sigma^2) sum_(k = 1)^N (y_(upright("observed")) \( t_k \) - y_(upright("model")) \( t_k \, bold(theta) \))^2 $
+$
+  ln p\(D divides bold(theta)\,sigma\)= - N / 2 ln\(2 pi\)- N ln\(sigma\)- frac(1, 2 sigma^2) sum_(k = 1)^N (y_(upright("observed")) \( t_k \) - y_(upright("model")) \( t_k \, bold(theta) \))^2
+$
 
 This reveals why minimizing the sum of squared errors in standard
 regression is mathematically equivalent to maximizing the log-likelihood
@@ -771,7 +793,9 @@ Metropolis-Hastings Step-by-Step Algorithm
 + Compute the Acceptance Ratio: Calculate the probability ratio $alpha$
   of the proposed parameter set against the current parameter set:
 
-$ alpha = min (1 \, frac(p\(D divides bold(theta)^(*)\)p\(bold(theta)^(*)\), p\(D divides bold(theta)^(\(m - 1\))\)p\(bold(theta)^(\(m - 1\))\))) $
+$
+  alpha = min (1 \, frac(p\(D divides bold(theta)^(*)\)p\(bold(theta)^(*)\), p\(D divides bold(theta)^(\(m - 1\))\)p\(bold(theta)^(\(m - 1\))\)))
+$
 
 Notice that the intractable term $p\(D\)$ cancels out completely. 4.
 Accept or Reject: Draw a uniform random number
@@ -802,10 +826,10 @@ Solids via Refractive Index ($""^compose upright("Brix")$), online fluid
 density, or simple medium $upright("pH")$).
 
 #mermaid(
-```
-graph LR
-  A[TRUE METRIC: High-MW Pectin Pool] -.->|Calibration| B[PROXY INDICATOR: FTIR Spectrum Absorbance]
-```
+  ```
+  graph LR
+    A[TRUE METRIC: High-MW Pectin Pool] -.->|Calibration| B[PROXY INDICATOR: FTIR Spectrum Absorbance]
+  ```,
 )
 
 
@@ -816,7 +840,9 @@ Squares Regression \[PLS\] or a Gaussian Process) to infer the true
 state vector $upright(bold(w))$ from the raw proxy spectra or sensor
 arrays $upright(bold(z))$:
 
-$ upright(bold(w))_(upright("estimated")) = cal(M)_(upright("calib"))\(upright(bold(z))\)+ bold(epsilon.alt)_(upright("proxy")) $
+$
+  upright(bold(w))_(upright("estimated")) = cal(M)_(upright("calib"))\(upright(bold(z))\)+ bold(epsilon.alt)_(upright("proxy"))
+$
 
 For our pectin project, an FTIR spectrometer measures absorbance across
 a range of wavenumbers
@@ -881,14 +907,14 @@ preventing those errors from biasing your physical parameter estimates
 $bold(theta)$.
 
 #mermaid(
-```
-graph TD
-  A[Real-World Data] --> B[Complete System Response]
-  B --> C[Mechanistic ODE Model]
-  C --> C2[Captures primary physical laws]
-  B --> D[Discrepancy GP]
-  D --> D2[Absorbs unmodeled phenomena]
-```
+  ```
+  graph TD
+    A[Real-World Data] --> B[Complete System Response]
+    B --> C[Mechanistic ODE Model]
+    C --> C2[Captures primary physical laws]
+    B --> D[Discrepancy GP]
+    D --> D2[Absorbs unmodeled phenomena]
+  ```,
 )
 
 == Discrepancy Diagnostics: Residual Analysis
@@ -918,7 +944,9 @@ that maximize a specified performance metric, such as the pure
 functional pectin yield while minimizing raw material costs and
 degradation:
 
-$ upright("Objective Function ") f\(upright(bold(x))\)= P_(upright("sol"))\(upright(bold(x))\)- omega_1 dot.op P_(upright("loss"))\(upright(bold(x))\)- omega_2 dot.op upright("Cost")\(upright(bold(x))\) $
+$
+  upright("Objective Function ") f\(upright(bold(x))\)= P_(upright("sol"))\(upright(bold(x))\)- omega_1 dot.op P_(upright("loss"))\(upright(bold(x))\)- omega_2 dot.op upright("Cost")\(upright(bold(x))\)
+$
 
 == Machine Learning Surrogates (Gaussian Processes)
 <machine-learning-surrogates-gaussian-processes>
@@ -934,7 +962,9 @@ predictions at any point in the input space, defined by a mean
 $mu\(upright(bold(x))\)$ and an explicit variance
 $sigma^2\(upright(bold(x))\)$:
 
-$ hat(f)\(upright(bold(x))\)tilde.op cal(G P) (mu \( upright(bold(x)) \) \, k \( upright(bold(x)) \, upright(bold(x))' \)) $
+$
+  hat(f)\(upright(bold(x))\)tilde.op cal(G P) (mu \( upright(bold(x)) \) \, k \( upright(bold(x)) \, upright(bold(x))' \))
+$
 
 == The Exploration-Exploitation Dilemma and Acquisition Functions
 <the-exploration-exploitation-dilemma-and-acquisition-functions>
@@ -969,12 +999,16 @@ The Expected Improvement criterion calculates the expectation of
 improving over the current best-known experimental result
 $f\(upright(bold(x))^(+)\)$:
 
-$ alpha_(upright("EI"))\(upright(bold(x))\)= bb(E) [max \( 0 \, hat(f) \( upright(bold(x)) \) - f \( upright(bold(x))^(+) \) \)] $
+$
+  alpha_(upright("EI"))\(upright(bold(x))\)= bb(E) [max \( 0 \, hat(f) \( upright(bold(x)) \) - f \( upright(bold(x))^(+) \) \)]
+$
 
 Using the properties of the Gaussian distribution, this integrates
 analytically to:
 
-$ alpha_(upright("EI"))\(upright(bold(x))\)=\(mu\(upright(bold(x))\)- f\(upright(bold(x))^(+)\)\)Phi\(Z\)+ sigma\(upright(bold(x))\)phi.alt\(Z\) $
+$
+  alpha_(upright("EI"))\(upright(bold(x))\)=\(mu\(upright(bold(x))\)- f\(upright(bold(x))^(+)\)\)Phi\(Z\)+ sigma\(upright(bold(x))\)phi.alt\(Z\)
+$
 
 Where $Phi\(dot.op\)$ and $phi.alt\(dot.op\)$ are the standard normal
 cumulative distribution and probability density functions, and $Z$ is
@@ -988,16 +1022,16 @@ model uncertainty (exploration). This elegant mathematical trade-off
 prevents the system from getting stuck in local optima.
 
 #mermaid(
-```
-graph LR
-  subgraph Acquisition Value alpha
-    direction LR
-    A[Exploit High Mean]
-    B[Explore High Uncertainty]
-  end
-  CandidateA[Candidate A] --> A
-  CandidateB[Candidate B] --> B
-```
+  ```
+  graph LR
+    subgraph Acquisition Value alpha
+      direction LR
+      A[Exploit High Mean]
+      B[Explore High Uncertainty]
+    end
+    CandidateA[Candidate A] --> A
+    CandidateB[Candidate B] --> B
+  ```,
 )
 
 == The Autonomous Closed Loop in Practice
@@ -1030,36 +1064,36 @@ the generic mathematical framework from the domain-specific parameters
 of the pectin application.
 
 #mermaid(
-```
-graph LR
-  subgraph Generic Methodology Backbone
-    direction TB
-    A[Conservation Invariant ODEs]
-    B[Logarithmic Sensitivity Matrix & SVD]
-    C[D-Optimality Criterion Max]
-    D[Bayesian MCMC Posterior Sampling]
-    E[Proxy Calibration & Noise Budgeting]
-    F[Kennedy-O'Hagan Discrepancy Capture]
-    G[Bayesian GP Optimization UCB/EI]
-  end
-  subgraph Pectin Case Study Domain Specific
-    direction TB
-    A2[4-Pool Carbohydrate Mass Fractions]
-    B2[Arrhenius Frequency & Activation Energy]
-    C2[Dynamic Sample Extraction Times]
-    D2[Prior Estimates from Polysaccharide Lit]
-    E2[FTIR Absorbance Fingerprints for Yield]
-    F2[Correcting for Imperfect Reactor Mixing]
-    G2[Maximizing High-MW Pectin Yield]
-  end
-  A -.-> A2
-  B -.-> B2
-  C -.-> C2
-  D -.-> D2
-  E -.-> E2
-  F -.-> F2
-  G -.-> G2
-```
+  ```
+  graph LR
+    subgraph Generic Methodology Backbone
+      direction TB
+      A[Conservation Invariant ODEs]
+      B[Logarithmic Sensitivity Matrix & SVD]
+      C[D-Optimality Criterion Max]
+      D[Bayesian MCMC Posterior Sampling]
+      E[Proxy Calibration & Noise Budgeting]
+      F[Kennedy-O'Hagan Discrepancy Capture]
+      G[Bayesian GP Optimization UCB/EI]
+    end
+    subgraph Pectin Case Study Domain Specific
+      direction TB
+      A2[4-Pool Carbohydrate Mass Fractions]
+      B2[Arrhenius Frequency & Activation Energy]
+      C2[Dynamic Sample Extraction Times]
+      D2[Prior Estimates from Polysaccharide Lit]
+      E2[FTIR Absorbance Fingerprints for Yield]
+      F2[Correcting for Imperfect Reactor Mixing]
+      G2[Maximizing High-MW Pectin Yield]
+    end
+    A -.-> A2
+    B -.-> B2
+    C -.-> C2
+    D -.-> D2
+    E -.-> E2
+    F -.-> F2
+    G -.-> G2
+  ```,
 )
 
 The core mathematical architecture of this self-learning system is
