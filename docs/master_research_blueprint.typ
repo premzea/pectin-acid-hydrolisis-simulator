@@ -43,7 +43,7 @@
 = Executive Summary
 This document synthesizes the complete research architecture for building a digital twin of passion-fruit pectin extraction. The architecture bridges a strict mechanistic kinetic model with a Bayesian Optimal Experimental Design (OED) framework. To solve the fundamental bottleneck of expensive laboratory analytics, the system employs a hierarchical proxy measurement model, allowing dense time-series data collection using cost-effective chemometric and rheological sensors.
 
-To provide a clear distinction between what has been mathematically proven and what remains to be physically tested, this blueprint is divided into two distinct phases: **Part I** covers the preliminary computational results (model derivation, identifiability, and OED) generated via synthetic data simulation. **Part II** outlines the proposed physical execution and laboratory architecture required to deploy the system in reality.
+To provide a clear distinction between the methodology's conceptual sequence and its current state of progress, this blueprint is structurally divided. After outlining the complete 9-component methodology, **Part I** explicitly reports on the steps that have already been executed via modeling and synthetic data simulations (Components 1-3). **Part II** outlines the pending physical laboratory protocols required to execute the remaining steps in reality (Components 4-5).
 
 The sequence of this research project is explicitly defined as:
 $
@@ -97,8 +97,8 @@ The deepest abstraction of this system is not "use ML to optimize a reactor." It
 #v(2em)
 #align(center)[
   #rect(fill: rgb("f8f9fa"), stroke: luma(150), radius: 4pt, inset: 12pt, width: 100%)[
-    #text(size: 14pt, weight: "bold")[PART I: PRELIMINARY COMPUTATIONAL RESULTS] \
-    #text(style: "italic")[Derived exclusively from numerical simulations and synthetic data]
+    #text(size: 14pt, weight: "bold")[PART I: EXECUTED STEPS (COMPUTATIONAL PHASE)] \
+    #text(style: "italic")[Reporting on the completion of Components 1–3 via numerical simulations and synthetic data]
   ]
 ]
 #v(1em)
@@ -194,8 +194,8 @@ The explicit 10-run protocol defined by the solver is as follows (distribute acr
 #v(2em)
 #align(center)[
   #rect(fill: rgb("f8f9fa"), stroke: luma(150), radius: 4pt, inset: 12pt, width: 100%)[
-    #text(size: 14pt, weight: "bold")[PART II: PROPOSED PHYSICAL EXECUTION] \
-    #text(style: "italic")[Experimental protocols pending physical laboratory execution]
+    #text(size: 14pt, weight: "bold")[PART II: PENDING STEPS (PHYSICAL EXECUTION)] \
+    #text(style: "italic")[Proposed laboratory architecture to execute Components 4–5]
   ]
 ]
 #v(1em)
@@ -319,5 +319,7 @@ By mathematically integrating over the latent state $y$, the inference engine co
 Because the integral in the denominator of Bayes' theorem is intractable for a non-linear ODE system, the posterior distribution cannot be calculated analytically. 
 
 Instead, we use **Markov Chain Monte Carlo (MCMC)** algorithms (specifically Hamiltonian Monte Carlo / NUTS). These algorithms act as intelligent "walkers" that explore the 9-dimensional parameter space, spending more time in regions where the Prior and Likelihood are high. The resulting trail of samples provides a direct numerical representation of the posterior distribution, entirely bypassing the need for analytical integration.
+
+
 
 
