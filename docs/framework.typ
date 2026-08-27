@@ -104,6 +104,38 @@ effects back to causes. \#\# Mathematical Definitions
 ```
 
 
+#mermaid(
+```
+graph LR
+  subgraph FORWARD PROBLEM
+    direction LR
+    A[Inputs x + Parameters theta] --> B[Model]
+    B --> C[Observations y]
+  end
+  subgraph INVERSE PROBLEM
+    direction LR
+    A2[Observations y + Inputs x] --> B2[Algorithm]
+    B2 --> C2[Parameters theta]
+  end
+```
+)
+
+
+#mermaid(
+```
+graph LR
+  subgraph FORWARD PROBLEM
+    direction LR
+    A[Inputs x + Parameters theta] --> B[Model]
+    B --> C[Observations y]
+  end
+  subgraph INVERSE PROBLEM
+    direction LR
+    A2[Observations y + Inputs x] --> B2[Algorithm]
+    B2 --> C2[Parameters theta]
+  end
+```
+)
 The Forward Problem is mathematically deterministic and well-posed.
 Given a vector of operating inputs $x$ and a concrete vector of physical
 parameters $theta$, we evaluate a forward operator $cal(F)$ (such as an
@@ -328,6 +360,22 @@ Engineers frequently conflate verification and validation, using them
 interchangeably. In scientific machine learning and system
 identification, they represent distinct, non-overlapping tasks.
 
+#mermaid(
+```
+graph TD
+  subgraph MATHEMATICAL DESIGN
+    direction TB
+    A[Is the software correct?] --> B[CODE VERIFICATION]
+    B --> C[Checks for bugs, typos, and numerical integration accuracy]
+  end
+  subgraph PHYSICAL REALITY
+    direction TB
+    D[Is the science correct?] --> E[MODEL VALIDATION]
+    E --> F[Compares model outputs against real experimental data]
+  end
+```
+)
+
 ```
                                    ▼
                                    ▼
@@ -414,10 +462,17 @@ their combined ratio or product is identifiable. The direction along the
 valley floor is known as a sloppy direction, whereas the steep walls of
 the valley represent stiff directions.
 
+#mermaid(
 ```
-               Parameter θ₂
-                    ▲
+graph TD
+  subgraph Parameter Identifiability SVD
+    A[Stiff Direction: High Sensitivity] --- B((Parameter Estimate))
+    B --- C[Sloppy Direction: Parameter compensation valley]
+  end
 ```
+)
+
+
 
 == The Sensitivity Matrix
 <the-sensitivity-matrix>
@@ -745,6 +800,13 @@ instantaneous indicators that can be monitored continuously online
 (e.g., Fourier-Transform Infrared Spectroscopy (FTIR), Total Soluble
 Solids via Refractive Index ($""^compose upright("Brix")$), online fluid
 density, or simple medium $upright("pH")$).
+
+#mermaid(
+```
+graph LR
+  A[TRUE METRIC: High-MW Pectin Pool] -.->|Calibration| B[PROXY INDICATOR: FTIR Spectrum Absorbance]
+```
+)
 
 
 == Mathematical Calibration Mappings
