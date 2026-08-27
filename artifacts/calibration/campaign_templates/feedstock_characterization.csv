@@ -1,0 +1,3 @@
+batch_id,date,moisture_pct,pectin_mass_kg_per_kg_dry,galA_fraction,initial_DE_pct,initial_Mw_Da,d50_um,notes
+B001_Example,2026-09-01,8.5,0.20,78.0,74.5,654000,300,Nominal batch
+B002_Example,2026-09-15,,,,,,,New supplier
