@@ -22,9 +22,7 @@ The self-learning framework is cyclical and adaptive. It tightly couples physica
 [ Numerical Verification & Sanity Checks ]
                │
                ▼
-[ Identifiability Analysis (SVD / FIM)
-```
-``` ]
+[ Identifiability Analysis (SVD / FIM) ]
                │
                ▼
 [ Optimal Experimental Design (OED) ]
@@ -46,6 +44,7 @@ The self-learning framework is cyclical and adaptive. It tightly couples physica
                │
                ▼
 [ Active Learning / Next-Best Action Selection ] ────( Loop Back to OED )
+```
 
 ## Roles and Interactions of the Core Components
 
@@ -720,4 +719,5 @@ To help implement this system for your specific research goals, please let me kn
 * What measurement tools are available (e.g., direct offline analysis or online proxy sensors)?
 
 I can help write the core Python code for the sensitivity equations, configure your MCMC sampler, or build the acquisition loop.
+
 
