@@ -43,7 +43,7 @@
 = Executive Summary
 This document synthesizes the complete research architecture for building a digital twin of passion-fruit pectin extraction. The architecture bridges a strict mechanistic kinetic model with a Bayesian Optimal Experimental Design (OED) framework. To solve the fundamental bottleneck of expensive laboratory analytics, the system employs a hierarchical proxy measurement model, allowing dense time-series data collection using cost-effective chemometric and rheological sensors.
 
-To provide a clear distinction between the methodology's conceptual sequence and its current state of progress, this blueprint is structurally divided. After outlining the complete 9-component methodology, **Part I** explicitly reports on the steps that have already been executed via modeling and synthetic data simulations (Components 1-3). **Part II** outlines the pending physical laboratory protocols required to execute the remaining steps in reality (Components 4-5).
+To provide a clear distinction between the methodology's conceptual sequence and its current state of progress, this blueprint is structurally divided. After outlining the complete 9-component methodology, *Part I* explicitly reports on the steps that have already been executed via modeling and synthetic data simulations (Components 1-3). *Part II* outlines the pending physical laboratory protocols required to execute the remaining steps in reality (Components 4-5).
 
 The sequence of this research project is explicitly defined as:
 $
@@ -58,7 +58,7 @@ arrow.r text("Optimization")
 $
 
 = Generalized Methodological Framework
-While this document details the specific application of pectin acid hydrolysis, the underlying architecture represents a highly generalizable **Hybrid Mechanistic--Statistical Experimental Learning System**. This methodology applies broadly to bioprocessing, materials synthesis, and reaction engineering where experiments are expensive and optimization is critical.
+While this document details the specific application of pectin acid hydrolysis, the underlying architecture represents a highly generalizable *Hybrid Mechanistic--Statistical Experimental Learning System*. This methodology applies broadly to bioprocessing, materials synthesis, and reaction engineering where experiments are expensive and optimization is critical.
 
 == The Three Pillars of System Intelligence
 The framework explicitly separates three distinct computational responsibilities:
@@ -205,7 +205,7 @@ The time-resolved OED campaign requires 6 samples per run. Performing convention
 We solve this using a Bayesian Proxy Measurement Model. The physical experiment is segmented into a preparation layer and an observation layer.
 
 == The Preparation Model & Precipitation Bias
-Direct measurement of raw reactor liquor is strongly confounded by the extraction matrix (unreacted acid, trace metal ions, simple sugars) and is therefore not the preferred basis for routine proxy measurements. All proxy samples undergo **Standardized Alcohol Precipitation**. 
+Direct measurement of raw reactor liquor is strongly confounded by the extraction matrix (unreacted acid, trace metal ions, simple sugars) and is therefore not the preferred basis for routine proxy measurements. All proxy samples undergo *Standardized Alcohol Precipitation*. 
 
 This is not a neutral step. Ethanol fractionation can selectively recover high-$M_w$ pectin while leaving low-$M_w$ fragments in solution. We model this recovery bias as $eta_{"precipitation"} = f(M_w, D E)$. The proxy must be calibrated on the exact same precipitated material to absorb this physical bias natively.
 
@@ -231,7 +231,7 @@ To ensure the proxy models generalize, the calibration samples must span the ent
 ]
 *Sampling Schedule*: Withdrawn at $t = 10, 25, 45, 70, 95, 120$ minutes.
 
-Because time points within a single run are autocorrelated, standard cross-validation will overfit. We mandate **Leave-One-Run-Out (LORO) Cross-Validation**. 
+Because time points within a single run are autocorrelated, standard cross-validation will overfit. We mandate *Leave-One-Run-Out (LORO) Cross-Validation*. 
 *Acceptance Metrics*:
 1. *RMSEP*: Must be $< 5\%$ absolute for $D E$/GalA, and $< 50$ kDa for $M_w$.
 2. *Stratified RMSEP*: The proxy must not fail catastrophically at extremes (e.g., reported separately for low/med/high ranges).
@@ -249,20 +249,64 @@ $ p(theta mid z, x) prop p(theta) integral p(z mid y) p(y mid theta, x) d y $
 = Physical Implementation & Minimum Viable Laboratory (MVP)
 The hierarchical measurement architecture directly enables a decentralized, low-capital laboratory strategy. By mathematically separating high-frequency proxies from low-frequency ground-truth anchors, the physical execution requires minimal in-house capital expenditure.
 
+Given the goal is a cheap first-generation reactor, the design explicitly avoids over-instrumentation. The first version maximizes information gained per dollar and per unit of experimental complexity. 
+
+== The Lean V1 Sensor Stack
+
+The physical prototype is built around a simple but high-frequency (e.g., 1 Hz) continuous data logging strategy, paired with cheap aliquot-level channels.
+
+*Continuous Online Channels:*
+$ T(t), quad p H(t), quad R P M(t), quad I(t), quad m(t) $
+
+*Offline Aliquot Channels:*
+$ N T U(t_{"sample"}), quad C_{"ppt"}, quad F T I R, quad t_{"flow"} $
+
+=== Continuous Sensor Priority Justification
+
+#table(
+  columns: (auto, auto, auto, 1fr),
+  align: (left, left, right, left),
+  [*Priority*], [*Measurement*], [*Cost/Diff.*], [*Why*],
+  [1], [*Temperature* $T(t)$], [Very low], [Essential kinetic input.],
+  [2], [*pH* $p H(t)$], [Low], [Essential kinetic input.],
+  [3], [*Agitator RPM*], [Very low], [Makes mixing and load measurements interpretable.],
+  [4], [*Motor Current* $I(t)$], [Very low], [Cheap online proxy for changing slurry load and suspension behavior without needing a dedicated torque transducer.],
+  [5], [*Reactor Mass* $m(t)$], [Low-Mod], [Excellent QC for evaporation, sampling mass balance, and S:L ratio drift. A sleeper feature for digital twins.],
+  [6], [*Conductivity* $kappa(t)$], [Low], [Useful supporting signal (describes liquid environment) but deferred as a second-wave addition.],
+  [7], [*Torque Sensor*], [Moderate], [Better than motor current, but deferred until $I(t)$ proves insufficient.],
+  [8], [*Inline Optics / Density*], [High], [Explicitly deferred until data shows clear necessity.]
+)
+
+=== The Empirical Sensor Fusion Philosophy
+
+The experimental design intentionally pairs simple, ambiguous physical sensors with advanced mathematical calibration. For example:
+- *Motor Current ($I(t)$)*: At fixed RPM, temperature, and reactor geometry, changes in motor load provide cheap continuous information about the slurry's evolving physical properties without assuming it directly measures viscosity.
+- *Turbidity ($N T U$)*: A cheap optical turbidity measurement on aliquots provides a dense process-state signal. Its interpretation ($N T U = f("particles", d_{50}, C_{"solids"})$) is not unique, but together with process history, it powerfully improves the prediction of the latent extraction state.
+
+We record everything at high frequency and ask the data-driven question:
+#align(center)[
+  #rect[
+    *Which cheap signals actually explain the expensive measurements?*
+  ]
+]
+
+If, after 30-50 samples, we discover $M_w approx f(I, R P M, T, p H, N T U)$, we have successfully discovered a soft sensor empirically. This is exactly the kind of cheap sensor fusion the overarching methodology is designed to exploit.
+
 == Equipment Sourcing Strategy
 The project relies on a hybrid execution model, partnering with university core facilities for spectral and chromatographic capabilities:
 
 1. *In-House (Own / Operate)*: 
-   - 1.0 -- 2.0 L jacketed glass reactor (sized to prevent S:L ratio drift during 120 mL cumulative sampling).
-   - Continuous RTD temperature logging and pH meters.
+   - 1.0 -- 2.0 L jacketed glass reactor, mounted on a *load cell*.
+   - Continuous logging for RTD temperature, pH, agitator RPM, and motor current.
    - Standardized precipitation equipment (centrifuge, vacuum oven).
    - Calibrated analytical balance (Critical: drives the entire mass-basis of the kinetic ODE).
-   - Capillary viscometer and UV-Vis spectrophotometer.
+   - Optical turbidity meter ($N T U$).
 2. *University / Core Facility Access*: 
+   - Capillary viscometer and UV-Vis spectrophotometer.
    - ATR-FTIR Spectrometer (High-frequency chemical proxy).
    - HPSEC-MALLS (Low-frequency $M_w$ anchor).
 
-Expensive automated bioreactors, inline FTIR sensors, and sophisticated rheometers are explicitly deferred. 
+Expensive dedicated torque transducers, automated bioreactors, inline FTIR sensors, and sophisticated rheometers are explicitly deferred. 
 
 == Analytical Discipline & Traceability
 The Bayesian inference engine requires an unbroken relational chain linking the final measurement back to the thermodynamic history of the extraction. 
@@ -276,7 +320,7 @@ The mechanistic model has been mathematically verified, structural identifiabili
 
 The reactor is specified here not merely as a machine producing pectin, but as an experimental measurement instrument built specifically for identifying a dynamic model.
 
-The immediate physical step is the **Phase 1 Proxy Calibration**, generating 30 paired observations across 5 OED extreme trajectories to construct the $p(y mid z)$ measurement likelihoods. Once the chemometric and rheological proxies are validated against the SEC/Titration anchors, the system proceeds to the **10-run OED-selected calibration campaign plus 4 independent validation runs** for final parameter closure.
+The immediate physical step is the *Phase 1 Proxy Calibration*, generating 30 paired observations across 5 OED extreme trajectories to construct the $p(y mid z)$ measurement likelihoods. Once the chemometric and rheological proxies are validated against the SEC/Titration anchors, the system proceeds to the *10-run OED-selected calibration campaign plus 4 independent validation runs* for final parameter closure.
 
 #pagebreak()
 = Appendix A: Primer on Bayesian Inference
@@ -286,15 +330,15 @@ This appendix provides the conceptual and practical foundation for how Bayesian 
 == A.1 The Conceptual Shift: From Point Estimates to Probability
 In traditional process modeling, parameter estimation (calibration) searches for a single "best fit" set of parameters ($hat(theta)$) that minimizes the error between model predictions and experimental data. 
 
-Bayesian inference asks a fundamentally different question. Instead of searching for one perfect parameter set, it treats parameters as random variables and calculates the **probability of every possible parameter combination** given the observed data.
+Bayesian inference asks a fundamentally different question. Instead of searching for one perfect parameter set, it treats parameters as random variables and calculates the *probability of every possible parameter combination* given the observed data.
 
 This is governed by Bayes' Theorem:
 $ p(theta mid D) = (p(D mid theta) p(theta)) / p(D) $
 
 Where:
-- $p(theta)$ is the **Prior**: What we scientifically know about the parameters before running the experiment (e.g., thermodynamic bounds on activation energies).
-- $p(D mid theta)$ is the **Likelihood**: The probability of observing our experimental data $D$ if the parameters $theta$ were true. This is generated by running the ODE model.
-- $p(theta mid D)$ is the **Posterior**: The updated belief about the parameters after observing the data.
+- $p(theta)$ is the *Prior*: What we scientifically know about the parameters before running the experiment (e.g., thermodynamic bounds on activation energies).
+- $p(D mid theta)$ is the *Likelihood*: The probability of observing our experimental data $D$ if the parameters $theta$ were true. This is generated by running the ODE model.
+- $p(theta mid D)$ is the *Posterior*: The updated belief about the parameters after observing the data.
 
 == A.2 Practical Application in the Pectin Digital Twin
 In this project, the Bayesian framework solves two critical physical bottlenecks.
@@ -302,7 +346,7 @@ In this project, the Bayesian framework solves two critical physical bottlenecks
 === 1. Quantifying Uncertainty for Process Optimization
 By yielding a full probability distribution ($p(theta mid D)$) rather than a point estimate, the Bayesian model allows us to simulate the reactor thousands of times, each time sampling a different likely parameter set. This produces a predictive distribution (a confidence band) around the expected yield and degradation.
 
-When we later apply optimization algorithms, we do not simply maximize the expected yield. We maximize the **probability of achieving acceptable yield while guaranteeing degradation remains below a critical threshold** (Optimization Under Uncertainty).
+When we later apply optimization algorithms, we do not simply maximize the expected yield. We maximize the *probability of achieving acceptable yield while guaranteeing degradation remains below a critical threshold* (Optimization Under Uncertainty).
 
 === 2. The Hierarchical Measurement Model
 Standard likelihood functions assume direct, perfect observations of the state variables with simple Gaussian noise. As detailed in the main text, measuring true pectin Molecular Weight ($M_w$) directly in raw reactor liquor is impossible.
@@ -318,7 +362,7 @@ By mathematically integrating over the latent state $y$, the inference engine co
 == A.3 Computational Execution
 Because the integral in the denominator of Bayes' theorem is intractable for a non-linear ODE system, the posterior distribution cannot be calculated analytically. 
 
-Instead, we use **Markov Chain Monte Carlo (MCMC)** algorithms (specifically Hamiltonian Monte Carlo / NUTS). These algorithms act as intelligent "walkers" that explore the 9-dimensional parameter space, spending more time in regions where the Prior and Likelihood are high. The resulting trail of samples provides a direct numerical representation of the posterior distribution, entirely bypassing the need for analytical integration.
+Instead, we use *Markov Chain Monte Carlo (MCMC)* algorithms (specifically Hamiltonian Monte Carlo / NUTS). These algorithms act as intelligent "walkers" that explore the 9-dimensional parameter space, spending more time in regions where the Prior and Likelihood are high. The resulting trail of samples provides a direct numerical representation of the posterior distribution, entirely bypassing the need for analytical integration.
 
 
 
