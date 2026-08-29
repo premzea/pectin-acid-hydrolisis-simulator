@@ -31,10 +31,10 @@ def compute_proxy_signals(p_sol, p_low, Mw_sol, Mw_low, DE_sol, C_citric, LSR=20
     
     return brix, viscosity, conductivity
 
-def run_virtual_experiment(T_ext, pH, C_citric, time_min, kinetic_params):
+def run_virtual_experiment(T_ext, pH, C_citric, time_min, kinetic_params, d50_um=300.0):
     raw_rind = FreshRind(wet_mass=500.0, moisture_fraction=0.85, pectin_content_dry_basis=0.20, 
                          GalA_fraction_of_pectin=0.78, initial_DE=0.745, initial_Mw=654000.0)
-    feedstock = condition_feedstock(raw_rind, target_moisture=0.08, d50_um=300.0)
+    feedstock = condition_feedstock(raw_rind, target_moisture=0.08, d50_um=d50_um)
     res = simulate(feedstock, temperature_celsius=T_ext, pH=pH, C_citric=C_citric, 
                    time_min=time_min, kinetic_params=kinetic_params)
     return res, feedstock
@@ -55,8 +55,12 @@ def extract_trajectories(res, feedstock):
     return t, p_sol, p_low, DE_sol, Mw_sol, Mw_low
 
 def generate_experiment_data(cond, params):
-    T, pH, C_citric, t_end = cond
-    res, feedstock = run_virtual_experiment(T, pH, C_citric, t_end, params)
+    if len(cond) == 5:
+        T, pH, C_citric, t_end, d50 = cond
+    else:
+        T, pH, C_citric, t_end = cond
+        d50 = 300.0
+    res, feedstock = run_virtual_experiment(T, pH, C_citric, t_end, params, d50_um=d50)
     t, p_sol, p_low, DE_sol, Mw_sol, Mw_low = extract_trajectories(res, feedstock)
     
     sample_times = np.arange(0, t_end + 1e-3, 1.0)
@@ -87,7 +91,7 @@ def generate_experiment_data(cond, params):
         })
         
     return {
-        "condition": {"T": float(T), "pH": float(pH), "C_citric": float(C_citric), "t_end": float(t_end)},
+        "condition": {"T": float(T), "pH": float(pH), "C_citric": float(C_citric), "t_end": float(t_end), "d50": float(d50)},
         "times": sample_times.tolist(),
         "conductivity": cond_noisy.tolist(),
         "aliquots": aliquots
@@ -101,8 +105,9 @@ def residuals(q, history, schema):
     for obs in history:
         cond = obs["condition"]
         T, pH, C_citric, t_end = cond["T"], cond["pH"], cond["C_citric"], cond["t_end"]
+        d50 = cond.get("d50", 300.0)
         try:
-            res, feedstock = run_virtual_experiment(T, pH, C_citric, t_end, params)
+            res, feedstock = run_virtual_experiment(T, pH, C_citric, t_end, params, d50_um=d50)
             t, p_sol, p_low, DE_sol, Mw_sol, Mw_low = extract_trajectories(res, feedstock)
             
             p_s_i = np.interp(obs["times"], t, p_sol)
@@ -208,15 +213,16 @@ class CampaignManager:
                 theta_true_list.append(p["initial"])
         self.theta_true = np.array(theta_true_list, dtype=np.float64)
         
-        # Grid of possible experiments for Bayesian Optimization (Active Learning)
-        # We have expanded the physical boundaries to include cold (40C) and pressurized (130C) extremes
+        # 3D Grid of possible experiments for Bayesian Active Learning (T, pH, d50)
         np.random.seed(42)
-        T_grid = np.array([40.0, 60.0, 75.0, 90.0, 110.0, 130.0])
-        pH_grid = np.array([1.0, 1.5, 2.5, 3.5, 4.0])
+        T_grid = np.array([40.0, 65.0, 80.0, 95.0, 115.0])
+        pH_grid = np.array([1.2, 1.8, 2.4, 3.2])
+        d50_grid = np.array([150.0, 300.0, 600.0])
         self.candidate_space = []
         for T in T_grid:
             for pH in pH_grid:
-                self.candidate_space.append((T, pH, 0.05, 90.0))
+                for d50 in d50_grid:
+                    self.candidate_space.append((T, pH, 0.05, 90.0, d50))
         
         self.history = []
         
@@ -234,26 +240,21 @@ class CampaignManager:
         self.current_q_std = 0.05
         
     def _acquisition_function(self):
-        # Value of Information (Maximum Variance)
-        # We simulate each candidate in the grid using our CURRENT BEST posterior mean.
-        # We pick the experiment that produces the HIGHEST spread in proxy signals,
-        # because that's the region where our model is most uncertain and will learn the most.
-        
+        # Value of Information (Maximum Variance across 3D state space)
         if not self.history:
-            # First run: explore the absolute extremes (D-optimality proxy)
+            # First run: explore the maximum driving force extreme (T=115°C, pH=1.2, d50=150µm)
             best_idx = 0
-            # Pick T=130, pH=1.0 (Maximum driving force)
             for i, c in enumerate(self.candidate_space):
-                if c[0] == 130.0 and c[1] == 1.0:
+                if c[0] == 115.0 and c[1] == 1.2 and c[4] == 150.0:
                     best_idx = i
-            self.current_acquisition = "D-Optimality: Exploring extreme edge of state space (T=130, pH=1.0)"
-            return self.candidate_space.pop(best_idx)
+                    break
+            best_cond = self.candidate_space.pop(best_idx)
+            self.current_acquisition = f"D-Optimality: Exploring extreme edge of state space (T={best_cond[0]:.0f}°C, pH={best_cond[1]:.1f}, d50={best_cond[4]:.0f}µm)"
+            return best_cond
 
         # Draw 5 samples from our current posterior
-        # We approximate the posterior around q_opt using the std dev we just computed
         q_samples = []
         for _ in range(5):
-            # q_opt is log space, perturb it slightly
             q_samples.append(self.q_opt + np.random.normal(0, 0.2, len(self.q_opt)))
             
         best_variance = -1
@@ -261,14 +262,13 @@ class CampaignManager:
         best_cond = self.candidate_space[0]
         
         for i, cond in enumerate(self.candidate_space):
-            T, pH, C_citric, t_end = cond
+            T, pH, C_citric, t_end, d50 = cond
             yield_predictions = []
             try:
                 for q in q_samples:
                     theta = self.schema.inverse_transform(q)
                     params = self.schema.unpack(theta)
-                    res, _ = run_virtual_experiment(T, pH, C_citric, t_end, params)
-                    # Use final soluble yield as the variance proxy
+                    res, _ = run_virtual_experiment(T, pH, C_citric, t_end, params, d50_um=d50)
                     final_yield = res.state.soluble_intact_pectin[-1] + res.state.low_mw_pectin[-1]
                     yield_predictions.append(final_yield)
                     
@@ -281,7 +281,7 @@ class CampaignManager:
                 continue
                 
         self.candidate_space.pop(best_idx)
-        self.current_acquisition = f"Max-Variance (Active Learning): Targeted T={best_cond[0]:.0f}°C, pH={best_cond[1]:.1f} to collapse uncertainty."
+        self.current_acquisition = f"Max-Variance (Active Learning): Targeted T={best_cond[0]:.0f}°C, pH={best_cond[1]:.1f}, d50={best_cond[4]:.0f}µm to collapse uncertainty."
         return best_cond
         
     def get_status(self):
