@@ -293,8 +293,20 @@ class CampaignManager:
             for row in subset:
                 samples.append({name: float(row[i]) for i, name in enumerate(self.param_names)})
                 
+        # Return all ground truth parameters, not just fitted ones
+        true_all = {
+            "k_ref_ext": self.truth.k_ref_ext, "Ea_ext": self.truth.Ea_ext, "alpha": self.truth.alpha,
+            "k_ref_hyd": self.truth.k_ref_hyd, "Ea_hyd": self.truth.Ea_hyd,
+            "k_ref_deg": self.truth.k_ref_deg, "Ea_deg": self.truth.Ea_deg,
+            "k_ref_de": self.truth.k_ref_de, "Ea_de": self.truth.Ea_de
+        }
+        
+        # Add the schema aliases (e.g., Ea_degradation) so the MCMC plots can find their "true" markers
+        for i, name in enumerate(self.param_names):
+            true_all[name] = float(self.theta_true[i])
+            
         return {
-            "true_params": {name: float(self.theta_true[i]) for i, name in enumerate(self.param_names)},
+            "true_params": true_all,
             "posterior_means": {name: float(self.posterior_means[i]) for i, name in enumerate(self.param_names)},
             "posterior_stds": {name: float(self.posterior_stds[i]) for i, name in enumerate(self.param_names)},
             "posterior_samples": samples,
