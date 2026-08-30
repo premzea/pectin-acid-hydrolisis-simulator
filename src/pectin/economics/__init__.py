@@ -4,8 +4,10 @@ from .models import (
     MarketPricing, 
     CostAssumptions, 
     EconomicsEngine,
-    Route,
+    DownstreamFlowsheet,
+    SeparationFlowsheet,
     SeparationRoute,
+    Route,
     BatchEconomicsResult,
     DownstreamCostBreakdown
 )
@@ -16,8 +18,10 @@ __all__ = [
     "MarketPricing",
     "CostAssumptions",
     "EconomicsEngine",
-    "Route",
+    "DownstreamFlowsheet",
+    "SeparationFlowsheet",
     "SeparationRoute",
+    "Route",
     "BatchEconomicsResult",
     "DownstreamCostBreakdown"
 ]

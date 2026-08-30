@@ -1,4 +1,6 @@
 from .models import (
+    DownstreamFlowsheet,
+    SeparationFlowsheet,
     SeparationRoute,
     Route,
     SeparationPhysics,
@@ -7,6 +9,8 @@ from .models import (
 )
 
 __all__ = [
+    "DownstreamFlowsheet",
+    "SeparationFlowsheet",
     "SeparationRoute",
     "Route",
     "SeparationPhysics",

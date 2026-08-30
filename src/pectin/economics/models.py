@@ -1,6 +1,14 @@
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Union
 from pydantic import BaseModel, Field
-from pectin.separation import SeparationRoute, Route, SeparationResult, SeparationPhysics, simulate_separation
+from pectin.separation import (
+    DownstreamFlowsheet, 
+    SeparationFlowsheet, 
+    SeparationRoute, 
+    Route, 
+    SeparationResult, 
+    SeparationPhysics, 
+    simulate_separation
+)
 
 def ph_to_citric_wt_fraction(ph: float) -> float:
     """
@@ -76,7 +84,8 @@ class DownstreamCostBreakdown(BaseModel):
     total_downstream_cost_usd: float = 0.0
 
 class BatchEconomicsResult(BaseModel):
-    route: SeparationRoute
+    flowsheet: DownstreamFlowsheet
+    route: DownstreamFlowsheet # alias for backward compat
     batch_dry_peel_kg: float
     kg_pectin_extracted: float
     kg_finished_pectin: float
@@ -105,16 +114,18 @@ class EconomicsEngine:
         self,
         batch_kg: float,
         yield_kg_per_kg_peel: float,
-        route: SeparationRoute = SeparationRoute.HYBRID,
+        flowsheet: Optional[Union[DownstreamFlowsheet, str]] = None,
+        route: Optional[Union[DownstreamFlowsheet, str]] = None,
         liquid_ratio: Optional[float] = None,
         target_ph: Optional[float] = None,
         c_citric_wt_fraction: Optional[float] = None,
         temp_c: float = 85.0
     ) -> BatchEconomicsResult:
         """
-        Full TEA simulation for an extraction & downstream separation batch.
-        Integrates upstream reactor consumption with dynamic citric acid requirement and pectin.separation physics.
+        Full TEA simulation for an extraction & downstream separation process train.
+        Integrates upstream reactor consumption with dynamic citric acid requirement and downstream flowsheet physics.
         """
+        target_fs = flowsheet or route or DownstreamFlowsheet.HYBRID_MEMBRANE_SOLVENT
         ratio = liquid_ratio if liquid_ratio is not None else self.costs.default_liquid_ratio
         ph = target_ph if target_ph is not None else self.costs.default_target_ph
         
@@ -138,7 +149,7 @@ class EconomicsEngine:
         
         # Downstream separation physics from pectin.separation
         sep_result = simulate_separation(
-            route=route,
+            flowsheet=target_fs,
             liters_extract=liters_water,
             kg_pectin_extracted=kg_extracted_theoretical
         )
@@ -163,7 +174,8 @@ class EconomicsEngine:
         break_even_cost = revenue
         
         return BatchEconomicsResult(
-            route=sep_result.route,
+            flowsheet=sep_result.flowsheet,
+            route=sep_result.flowsheet,
             batch_dry_peel_kg=batch_kg,
             kg_pectin_extracted=kg_extracted_theoretical,
             kg_finished_pectin=kg_finished,

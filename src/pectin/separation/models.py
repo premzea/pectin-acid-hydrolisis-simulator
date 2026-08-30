@@ -1,14 +1,16 @@
 from enum import Enum
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, Union
 
-class SeparationRoute(str, Enum):
-    CONVENTIONAL = "conventional"
-    HYBRID = "hybrid"
-    DIRECT_DRYING = "direct_drying"
+class DownstreamFlowsheet(str, Enum):
+    HYBRID_MEMBRANE_SOLVENT = "hybrid"
+    ZERO_SOLVENT_DIRECT_DRYING = "direct_drying"
+    CONVENTIONAL_EVAPORATIVE = "conventional"
 
-# Alias for backward compatibility
-Route = SeparationRoute
+# Aliases for backward compatibility
+SeparationFlowsheet = DownstreamFlowsheet
+SeparationRoute = DownstreamFlowsheet
+Route = DownstreamFlowsheet
 
 class SeparationPhysics(BaseModel):
     ethanol_recovery_pct: float = 0.95  # 95% recovery rate in distillation
@@ -18,7 +20,8 @@ class SeparationPhysics(BaseModel):
     evaporation_thermal_mj_per_kg: float = 2.5  # ~2.5 MJ/kg water evaporation
 
 class SeparationResult(BaseModel):
-    route: SeparationRoute
+    flowsheet: DownstreamFlowsheet
+    route: DownstreamFlowsheet # alias for backward compat
     kg_pectin_extracted: float
     kg_pectin_recovered: float
     yield_recovery_fraction: float
@@ -38,22 +41,35 @@ class SeparationResult(BaseModel):
     evaporation_thermal_mj: float = 0.0
 
 def simulate_separation(
-    route: SeparationRoute,
-    liters_extract: float,
-    kg_pectin_extracted: float,
-    physics: Optional[SeparationPhysics] = None
+    flowsheet: Optional[Union[DownstreamFlowsheet, str]] = None,
+    liters_extract: float = 20000.0,
+    kg_pectin_extracted: float = 100.0,
+    physics: Optional[SeparationPhysics] = None,
+    route: Optional[Union[DownstreamFlowsheet, str]] = None # alias
 ) -> SeparationResult:
     """
-    Algebraic mass and energy balance for downstream separation routes.
+    Algebraic mass and energy balance for downstream separation flowsheets (process trains).
     
-    Routes:
-      1. CONVENTIONAL: Evaporate 80% water, then 2:1 ethanol precipitation (90% pectin recovery)
-      2. HYBRID: UF/DF 10x volume reduction, then 1:1 ethanol precipitation (95% pectin recovery)
-      3. DIRECT_DRYING: UF/DF 10x volume reduction, zero ethanol, direct thermal drying (98% recovery)
+    Flowsheet Configurations:
+      1. HYBRID_MEMBRANE_SOLVENT ("hybrid"):
+         MF Clarification -> UF/DF 10x volume reduction -> 1:1 ethanol precipitation -> Drying (95% recovery)
+      2. ZERO_SOLVENT_DIRECT_DRYING ("direct_drying"):
+         MF Clarification -> UF/DF Diafiltration -> Direct thermal spray drying. Zero ethanol (98% recovery)
+      3. CONVENTIONAL_EVAPORATIVE ("conventional"):
+         MF Clarification -> 80% thermal evaporation -> 2:1 bulk ethanol precipitation -> Drying (90% recovery)
     """
     if physics is None:
         physics = SeparationPhysics()
         
+    target_fs = flowsheet or route or DownstreamFlowsheet.HYBRID_MEMBRANE_SOLVENT
+    if isinstance(target_fs, str):
+        if target_fs in ["conventional", "conventional_evaporative"]:
+            target_fs = DownstreamFlowsheet.CONVENTIONAL_EVAPORATIVE
+        elif target_fs in ["direct_drying", "zero_solvent_direct_drying", "direct_spray_drying"]:
+            target_fs = DownstreamFlowsheet.ZERO_SOLVENT_DIRECT_DRYING
+        else:
+            target_fs = DownstreamFlowsheet.HYBRID_MEMBRANE_SOLVENT
+
     ethanol_consumed_l = 0.0
     ethanol_used_l = 0.0
     permeate_vol = 0.0
@@ -64,33 +80,26 @@ def simulate_separation(
     uf_electricity_kwh = 0.0
     evaporation_thermal_mj = 0.0
     
-    # 1. CONVENTIONAL (Route 3)
-    if route == SeparationRoute.CONVENTIONAL or route == "conventional":
-        # Evaporate 80% water prior to precipitation
+    # 1. CONVENTIONAL EVAPORATIVE TRAIN
+    if target_fs == DownstreamFlowsheet.CONVENTIONAL_EVAPORATIVE:
         evaporation_water_kg = liters_extract * 0.80
         remaining_liquor = liters_extract - evaporation_water_kg
         
-        # 2 volumes ethanol per volume liquor
         ethanol_used_l = remaining_liquor * 2.0
         ethanol_consumed_l = ethanol_used_l * (1.0 - physics.ethanol_recovery_pct)
         
-        # Drying remaining moisture cake (assumed ~1:1 water to pectin)
         drying_water_kg = kg_pectin_extracted * 1.0
-        
-        # 90% recovery of soluble pectin
         kg_recovered = kg_pectin_extracted * 0.90
         recovery_fraction = 0.90
         
-    # 2. HYBRID (Route 2)
-    elif route == SeparationRoute.HYBRID or route == "hybrid":
-        # UF concentration: 10x volume reduction (90% permeate, 10% retentate)
+    # 2. HYBRID MEMBRANE-SOLVENT TRAIN
+    elif target_fs == DownstreamFlowsheet.HYBRID_MEMBRANE_SOLVENT:
         permeate_vol = liters_extract * 0.90
         retentate_vol = liters_extract * 0.10
         
         membrane_area_m2 = permeate_vol / (physics.uf_flux_lmh * physics.uf_operating_time_h)
         uf_electricity_kwh = membrane_area_m2 * physics.uf_power_kw_per_m2 * physics.uf_operating_time_h
         
-        # 1 volume ethanol per volume retentate
         ethanol_used_l = retentate_vol * 1.0
         ethanol_consumed_l = ethanol_used_l * (1.0 - physics.ethanol_recovery_pct)
         
@@ -98,31 +107,30 @@ def simulate_separation(
         kg_recovered = kg_pectin_extracted * 0.95
         recovery_fraction = 0.95
         
-    # 3. DIRECT DRYING (Route 1)
-    elif route == SeparationRoute.DIRECT_DRYING or route == "direct_drying":
+    # 3. ZERO-SOLVENT DIRECT DRYING TRAIN
+    elif target_fs == DownstreamFlowsheet.ZERO_SOLVENT_DIRECT_DRYING:
         permeate_vol = liters_extract * 0.90
         retentate_vol = liters_extract * 0.10
         
         membrane_area_m2 = permeate_vol / (physics.uf_flux_lmh * physics.uf_operating_time_h)
         uf_electricity_kwh = membrane_area_m2 * physics.uf_power_kw_per_m2 * physics.uf_operating_time_h
         
-        # Zero ethanol
         ethanol_used_l = 0.0
         ethanol_consumed_l = 0.0
         
-        # Direct thermal drying of entire concentrated retentate
         drying_water_kg = retentate_vol
         kg_recovered = kg_pectin_extracted * 0.98
         recovery_fraction = 0.98
         
     else:
-        raise ValueError(f"Unknown separation route: {route}")
+        raise ValueError(f"Unknown downstream flowsheet: {target_fs}")
         
     if evaporation_water_kg > 0:
         evaporation_thermal_mj = evaporation_water_kg * physics.evaporation_thermal_mj_per_kg
 
     return SeparationResult(
-        route=SeparationRoute(route),
+        flowsheet=target_fs,
+        route=target_fs,
         kg_pectin_extracted=kg_pectin_extracted,
         kg_pectin_recovered=kg_recovered,
         yield_recovery_fraction=recovery_fraction,
