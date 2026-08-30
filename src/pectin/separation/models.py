@@ -6,6 +6,7 @@ class DownstreamFlowsheet(str, Enum):
     HYBRID_MEMBRANE_SOLVENT = "hybrid"
     ZERO_SOLVENT_DIRECT_DRYING = "direct_drying"
     CONVENTIONAL_EVAPORATIVE = "conventional"
+    LIQUID_CONCENTRATE = "liquid_concentrate"
 
 # Aliases for backward compatibility
 SeparationFlowsheet = DownstreamFlowsheet
@@ -67,6 +68,8 @@ def simulate_separation(
             target_fs = DownstreamFlowsheet.CONVENTIONAL_EVAPORATIVE
         elif target_fs in ["direct_drying", "zero_solvent_direct_drying", "direct_spray_drying"]:
             target_fs = DownstreamFlowsheet.ZERO_SOLVENT_DIRECT_DRYING
+        elif target_fs in ["liquid_concentrate", "liquid"]:
+            target_fs = DownstreamFlowsheet.LIQUID_CONCENTRATE
         else:
             target_fs = DownstreamFlowsheet.HYBRID_MEMBRANE_SOLVENT
 
@@ -119,6 +122,23 @@ def simulate_separation(
         ethanol_consumed_l = 0.0
         
         drying_water_kg = retentate_vol
+        kg_recovered = kg_pectin_extracted * 0.98
+        recovery_fraction = 0.98
+        
+    # 4. LIQUID CONCENTRATE FORMULATION
+    elif target_fs == DownstreamFlowsheet.LIQUID_CONCENTRATE:
+        # Clarification + UF/DF to concentrate to a liquid product, zero final drying
+        permeate_vol = liters_extract * 0.90
+        retentate_vol = liters_extract * 0.10
+        
+        membrane_area_m2 = permeate_vol / (physics.uf_flux_lmh * physics.uf_operating_time_h)
+        uf_electricity_kwh = membrane_area_m2 * physics.uf_power_kw_per_m2 * physics.uf_operating_time_h
+        
+        ethanol_used_l = 0.0
+        ethanol_consumed_l = 0.0
+        
+        # KEY SAVINGS: Zero drying water, leaving the retentate as the liquid product base
+        drying_water_kg = 0.0
         kg_recovered = kg_pectin_extracted * 0.98
         recovery_fraction = 0.98
         
