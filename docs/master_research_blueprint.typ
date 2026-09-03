@@ -48,12 +48,13 @@ To provide a clear distinction between the methodology's conceptual sequence and
 The sequence of this research project is explicitly defined as:
 $
 text("Mechanistic Model") 
-arrow.r text("Synthetic Recovery") 
-arrow.r text("OED") 
+arrow.r text("Synthetic Verification & Initial OED") 
 arrow.r text("Proxy Calibration") \
-  
-arrow.r text("Physical Experiment") 
+arrow.r text("Empirical Covariance ") (Sigma_"proxy")
+arrow.r text("OED Re-targeting")
+arrow.r text("Physical Calibration") \
 arrow.r text("Bayesian Update")
+arrow.r text("Validation & Discrepancy")
 arrow.r text("Optimization")
 $
 
@@ -141,7 +142,7 @@ The state equations combine strict normalized mass conservation [$#text("kg/kg")
 $ (d P_{"sol"}) / (d t) &= k_{"ext"} P_{"matrix"} - k_{"hyd"} P_{"sol"} $
 $ (d P_{"lowMW"}) / (d t) &= k_{"hyd"} P_{"sol"} - k_{"deg"} P_{"lowMW"} $
 
-Kinetics are parameterized via an Arrhenius reference-state formulation ($T_{"ref"} = 353.15$ K, $p H_{"ref"} = 2.0$) to dramatically improve the numerical conditioning of the Bayesian inference.
+Kinetics are parameterized via an Arrhenius reference-state formulation ($T_{"ref"} = 353.15$ K, $p H_{"ref"} = 2.0$) to dramatically improve the numerical conditioning of the Bayesian inference. The simulator accepts $T(t)$ and $p H(t)$ as time-varying dynamic forcing functions to account for thermal transients and dynamic rind mineral buffering/acid uptake, while retaining constant setpoints for synthetic benchmarks.
 
 == Parameter Ontology
 To avoid mathematical ambiguity, all parameters are strictly assigned an ontology classification.
@@ -164,15 +165,17 @@ To avoid mathematical ambiguity, all parameters are strictly assigned an ontolog
 )
 ]
 
-= Structural Identifiability & OED
+= Structural Identifiability & Initial Synthetic OED
 The serial cascade induces a severe identifiability problem: a fast extraction/fast degradation trajectory looks mathematically identical to a slow extraction/slow degradation trajectory if observed only at the process endpoint.
 
-== Bayesian Optimal Experimental Design (OED)
-By computing the Fisher Information Matrix (FIM) over the 9-dimensional parameter space using synthetic data simulations, we designed an exact 10-run protocol that minimizes the determinant of the posterior covariance matrix (D-optimal design). 
+== Initial Bayesian Optimal Experimental Design (OED)
+By computing the Fisher Information Matrix (FIM) over the 9-dimensional parameter space using synthetic data simulations under assumed, idealized measurement noise ($sigma_Y approx 1%$, $sigma_(D E) approx 2%$, $sigma_(M_w) approx 15$ kDa), we generated an *initial synthetic 10-run protocol* that minimizes the determinant of the posterior covariance matrix (D-optimal design). 
 
-The OED analysis strongly favors time-resolved observation, particularly at early and intermediate residence times, to break the $k_{"hyd"} <-> k_{"deg"}$ correlation. It pushes the boundary conditions of the operating space (e.g., 95 °C/pH 1.5 vs 50 °C/pH 3.0). For the final 10-run protocol utilizing 4-point time-resolved tracking, the selected protocol substantially improves the conditioning of the inverse problem, eliminating near-null sensitivity directions and achieving a condition number of $kappa approx 27.0$.
+The OED analysis strongly favors time-resolved observation, particularly at early and intermediate residence times, to break the $k_{"hyd"} <-> k_{"deg"}$ correlation. It pushes the boundary conditions of the operating space (e.g., 95 °C/pH 1.5 vs 50 °C/pH 3.0). For the synthetic 10-run protocol utilizing 4-point time-resolved tracking, the design substantially improves the conditioning of the inverse problem, eliminating near-null sensitivity directions and achieving a condition number of $kappa approx 27.0$. It also guided the domain selection for the Phase 1 proxy calibration runs ($C 1 - C 5$).
 
-The explicit 10-run protocol defined by the solver is as follows (distribute across 2 baseline feedstock batches):
+*Methodological Distinction*: This design serves strictly as the *initial synthetic OED protocol*. Because the true proxy measurement errors and their cross-covariance will only be quantified empirically during physical Phase 1 testing, the final *Physically Deployable OED Protocol* will be frozen in *Stage 2b* via FIM re-targeting before physical calibration execution.
+
+The initial synthetic 10-run protocol defined by the solver is as follows (distribute across 2 baseline feedstock batches):
 #align(center)[
 #table(
   columns: (auto, auto, auto, auto, auto),
@@ -238,6 +241,15 @@ Because time points within a single run are autocorrelated, standard cross-valid
 3. *MAE & Bias*: Residuals must be centered at zero.
 4. *Uncertainty Coverage*: The proxy's 95% CI must contain the true reference value 95% of the time on unseen runs ($P(y_{"true"} in C I_{95\%,"proxy"})$).
 
+== Stage 2b: OED Re-Targeting via Empirical Measurement Covariance
+The initial synthetic OED was derived assuming idealized, uncorrelated measurement noise. However, to maximize the value of physical experimentation, the physical campaign must be optimized for the measurement system actually in hand.
+
+Phase 1 provides the empirical proxy error covariance matrix $Sigma_"proxy"$ (incorporating both variance and cross-covariance across $D E, X_"GalA", M_w$ estimated on unseen LORO folds). The Fisher Information Matrix is explicitly:
+$ F = S^T Sigma_"proxy"^(-1) S $
+Where $S = (partial y) / (partial theta)$ is the dynamic parameter sensitivity trajectory calculated from the forward ODE.
+
+By re-solving the D-optimality criterion ($xi^* = limits("arg max")_xi det(F(xi))$) using the empirical $Sigma_"proxy"$, the solver automatically redirects the 10-run operating coordinates and sampling timestamps toward the state spaces that provide maximal information gain given the real soft-sensor precision. This step freezes the final *Physically Deployable OED Protocol*.
+
 == Bayesian Integration
 The measurement hierarchy resolves into a clean Directed Acyclic Graph (DAG):
 $ text("Kinetic ODE") arrow.r y_{"true"} arrow.r y_{"prepared"} arrow.r z_{"observed"} $
@@ -259,7 +271,7 @@ The physical prototype is built around a simple but high-frequency (e.g., 1 Hz) 
 $ T(t), quad p H(t), quad R P M(t), quad I(t), quad m(t) $
 
 *Offline Aliquot Channels:*
-$ N T U(t_{"sample"}), quad C_{"ppt"}, quad F T I R, quad t_{"flow"} $
+$ N T U(t_{"sample"}), quad C_{"ppt"}, quad F T I R, quad t_{"flow"}, quad A_(284)(t_{"sample"}) $
 
 === Continuous Sensor Priority Justification
 
@@ -282,6 +294,7 @@ $ N T U(t_{"sample"}), quad C_{"ppt"}, quad F T I R, quad t_{"flow"} $
 The experimental design intentionally pairs simple, ambiguous physical sensors with advanced mathematical calibration. For example:
 - *Motor Current ($I(t)$)*: At fixed RPM, temperature, and reactor geometry, changes in motor load provide cheap continuous information about the slurry's evolving physical properties without assuming it directly measures viscosity.
 - *Turbidity ($N T U$)*: A cheap optical turbidity measurement on aliquots provides a dense process-state signal. Its interpretation ($N T U = f("particles", d_{50}, C_{"solids"})$) is not unique, but together with process history, it powerfully improves the prediction of the latent extraction state.
+- *Supernatant Absorbance ($A_{284}$)*: Under severe hydrolysis, degradation products (including 5-HMF and furfural derivatives) remain in the unprecipitated alcohol supernatant. Recording UV-Vis absorbance at 284 nm on the supernatant provides an exploratory degradation-related optical proxy. While not treated as an immediate direct measurement of $P_{"loss"}$ (as other plant chromophores absorb in this UV band), paired calibration runs will determine empirically whether it adds explanatory power for $k_{"deg"}$.
 
 We record everything at high frequency and ask the data-driven question:
 #align(center)[
@@ -316,11 +329,15 @@ $ t_{"aliquot"} + T(t) + p H(t) + m_{"liquor"} + m_{"pellet"} $
 If this chain is broken, the sample may no longer be suitable for kinetic inference because its process history cannot be assigned reliably.
 
 = Conclusion & Execution Map
-The mechanistic model has been mathematically verified, structural identifiability resolved via D-optimal design, and the measurement architecture strictly defined. By explicitly modeling sample preparation and measurement uncertainty as part of the Bayesian observation hierarchy, the project is insulated from the capital costs and physical biases that typically derail bioreactor optimization.
+The mechanistic model has been mathematically verified, structural identifiability resolved via an initial synthetic D-optimal design, and the measurement architecture strictly defined. By explicitly modeling sample preparation and measurement uncertainty as part of the Bayesian observation hierarchy, the project is insulated from the capital costs and physical biases that typically derail bioreactor optimization.
 
 The reactor is specified here not merely as a machine producing pectin, but as an experimental measurement instrument built specifically for identifying a dynamic model.
 
-The immediate physical step is the *Phase 1 Proxy Calibration*, generating 30 paired observations across 5 OED extreme trajectories to construct the $p(y mid z)$ measurement likelihoods. Once the chemometric and rheological proxies are validated against the SEC/Titration anchors, the system proceeds to the *10-run OED-selected calibration campaign plus 4 independent validation runs* for final parameter closure.
+The execution sequence is structured into four linked phases:
+1. *Phase 1 Proxy Calibration*: Generate 30 paired observations across 5 severity runs ($C 1 - C 5$) to construct empirical proxy models and quantify the full observation error covariance matrix $Sigma_"proxy"$ via LORO cross-validation.
+2. *Stage 2b OED Re-Targeting*: Ingest $Sigma_"proxy"$ into $F = S^T Sigma_"proxy"^(-1) S$ and re-solve the D-optimal design to freeze the *Physically Deployable OED Protocol*.
+3. *Physical Calibration Campaign*: Execute the re-targeted 10-run campaign across Batches A & B using the calibrated soft-sensor suite, feeding continuous $T(t)$ and $p H(t)$ traces into the Bayesian MCMC inference engine ($p(theta mid z)$).
+4. *Validation & Optimization*: Execute 4 independent validation runs on Batch C to quantify model discrepancy $delta(x)$ and evaluate batch-level feedstock variance (with hierarchical random effects on reserve if needed), followed by Bayesian optimization under uncertainty.
 
 #pagebreak()
 = Appendix A: Primer on Bayesian Inference
