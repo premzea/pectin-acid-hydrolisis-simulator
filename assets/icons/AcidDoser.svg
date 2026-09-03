@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="acidGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#4CC9F0"/>
+      <stop offset="100%" stop-color="#4361EE"/>
+    </linearGradient>
+    <linearGradient id="pumpGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3F37C9"/>
+      <stop offset="100%" stop-color="#1E1B4B"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Reagent Tank / Cylinder -->
+  <rect x="36" y="16" width="48" height="52" rx="6" fill="#F8F9FA" stroke="#1E1B4B" stroke-width="3"/>
+  <!-- Liquid level -->
+  <rect x="40" y="32" width="40" height="32" rx="3" fill="url(#acidGrad)" opacity="0.85"/>
+  <!-- Graduation marks -->
+  <line x1="40" y1="36" x2="48" y2="36" stroke="#1E1B4B" stroke-width="1.5"/>
+  <line x1="40" y1="44" x2="46" y2="44" stroke="#1E1B4B" stroke-width="1.5"/>
+  <line x1="40" y1="52" x2="48" y2="52" stroke="#1E1B4B" stroke-width="1.5"/>
+
+  <!-- Peristaltic Dosing Pump -->
+  <circle cx="60" cy="85" r="16" fill="url(#pumpGrad)" stroke="#1E1B4B" stroke-width="2.5"/>
+  <!-- Rollers -->
+  <circle cx="53" cy="80" r="3" fill="#4CC9F0"/>
+  <circle cx="67" cy="80" r="3" fill="#4CC9F0"/>
+  <circle cx="60" cy="93" r="3" fill="#4CC9F0"/>
+  <circle cx="60" cy="85" r="4" fill="#FFFFFF"/>
+
+  <!-- Discharge Tube -->
+  <path d="M 76 85 L 94 85 L 94 108" fill="none" stroke="#4361EE" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Connection Port -->
+  <circle cx="94" cy="110" r="3" fill="#118AB2" stroke="#FFFFFF" stroke-width="1.5"/>
+</svg>
