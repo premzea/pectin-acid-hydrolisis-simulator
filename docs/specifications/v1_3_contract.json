@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "1.3.0",
+  "title": "Pectin Acid Hydrolysis V1.3 Canonical Model Contract",
+  "description": "Formal versioned parameter, state, and units contract to guarantee mathematical parity between Python and Julia/Dyad simulators.",
+  "physical_constants": {
+    "R": {
+      "value": 8.314462618,
+      "units": "J/(mol*K)",
+      "description": "Universal gas constant"
+    },
+    "T_ref_kelvin": {
+      "value": 353.15,
+      "units": "K",
+      "description": "Reference Arrhenius temperature (80.0 C)"
+    },
+    "pH_ref": {
+      "value": 2.0,
+      "units": "dimensionless",
+      "description": "Reference kinetic acidity"
+    },
+    "d_ref_um": {
+      "value": 300.0,
+      "units": "um",
+      "description": "Reference characteristic particle size"
+    },
+    "Mw_min_default": {
+      "value": 10000.0,
+      "units": "Da",
+      "description": "Lower cut-off molecular weight for low-MW pectin pool"
+    }
+  },
+  "canonical_state_vector": [
+    {
+      "index": 1,
+      "name": "P_matrix",
+      "units": "kg/kg_dry_feed",
+      "description": "Insoluble protopectin residing in the rind matrix"
+    },
+    {
+      "index": 2,
+      "name": "P_sol",
+      "units": "kg/kg_dry_feed",
+      "description": "Soluble intact pectin extracted into liquid"
+    },
+    {
+      "index": 3,
+      "name": "P_lowMW",
+      "units": "kg/kg_dry_feed",
+      "description": "Depolymerized low molecular weight pectin"
+    },
+    {
+      "index": 4,
+      "name": "P_loss",
+      "units": "kg/kg_dry_feed",
+      "description": "Unrecoverable degraded products (sugars, furfurals, acids)"
+    },
+    {
+      "index": 5,
+      "name": "Q_DE_sol",
+      "units": "kg/kg_dry_feed",
+      "description": "De-esterification mass-weighted moment for soluble pool"
+    },
+    {
+      "index": 6,
+      "name": "Q_DE_lowMW",
+      "units": "kg/kg_dry_feed",
+      "description": "De-esterification mass-weighted moment for low-MW pool"
+    },
+    {
+      "index": 7,
+      "name": "Q_MW_sol",
+      "units": "Da*kg/kg_dry_feed",
+      "description": "Molecular weight mass-weighted moment for soluble pool"
+    },
+    {
+      "index": 8,
+      "name": "Q_MW_lowMW",
+      "units": "Da*kg/kg_dry_feed",
+      "description": "Molecular weight mass-weighted moment for low-MW pool"
+    },
+    {
+      "index": 9,
+      "name": "G_sol",
+      "units": "kg_GalA/kg_dry_feed",
+      "description": "Galacturonic acid mass inventory in soluble pool"
+    },
+    {
+      "index": 10,
+      "name": "G_lowMW",
+      "units": "kg_GalA/kg_dry_feed",
+      "description": "Galacturonic acid mass inventory in low-MW pool"
+    },
+    {
+      "index": 11,
+      "name": "G_loss",
+      "units": "kg_GalA/kg_dry_feed",
+      "description": "Galacturonic acid mass inventory in degradation pool"
+    }
+  ],
+  "kinetic_parameters": {
+    "k_ref_ext": { "units": "1/min", "description": "Extraction rate prefactor at (T_ref, pH_ref)" },
+    "Ea_ext": { "units": "J/mol", "description": "Activation energy for protopectin solubilization" },
+    "n_ext": { "units": "dimensionless", "default": 1.0, "description": "Acidity order for extraction" },
+    "alpha": { "units": "dimensionless", "default": 1.0, "description": "Particle size empirical scaling exponent" },
+    "k_ref_hyd": { "units": "1/min", "description": "Hydrolysis chain scission prefactor at (T_ref, pH_ref)" },
+    "Ea_hyd": { "units": "J/mol", "description": "Activation energy for hydrolysis" },
+    "n_hyd": { "units": "dimensionless", "default": 1.0, "description": "Acidity order for hydrolysis" },
+    "k_ref_deg": { "units": "1/min", "description": "Degradation to non-pectic products prefactor at (T_ref, pH_ref)" },
+    "Ea_deg": { "units": "J/mol", "description": "Activation energy for degradation" },
+    "n_deg": { "units": "dimensionless", "default": 1.0, "description": "Acidity order for degradation" },
+    "k_ref_de": { "units": "1/min", "description": "De-esterification rate prefactor at (T_ref, pH_ref)" },
+    "Ea_de": { "units": "J/mol", "description": "Activation energy for de-esterification" },
+    "n_de": { "units": "dimensionless", "default": 1.0, "description": "Acidity order for de-esterification" },
+    "gamma_citric": { "units": "L/mol", "default": 0.0, "description": "Citric acid catalytic multiplier for de-esterification" },
+    "beta_mw": { "units": "dimensionless", "default": 1.0, "description": "Moment relaxation sensitivity to chain scission" }
+  },
+  "parity_tolerances": {
+    "forward_state_relative_L_inf": 1e-4,
+    "final_yield_absolute_error": 1e-2,
+    "final_DE_absolute_error": 1e-3,
+    "final_Mw_relative_error": 1e-3,
+    "mass_conservation_max_absolute_error": 1e-6
+  }
+}
