@@ -1,0 +1,246 @@
+# PectinComponents: Reusable Dyad Studio Component Library
+# Passion-Fruit Rind Acid Hydrolysis Process Equipment & Kinetics
+
+package PectinComponents
+
+# ------------------------------------------------------------------------------
+# 1. Feedstock Biomass Source
+# ------------------------------------------------------------------------------
+component FeedstockSource
+    parameter dry_matter_mass = 1.0       # [kg]
+    parameter moisture_fraction = 0.10    # [kg H2O / kg fresh]
+    parameter pectin_mass = 0.233         # [kg protopectin / kg dry]
+    parameter GalA_fraction = 0.78        # [dimensionless]
+    parameter DE = 0.745                  # [dimensionless]
+    parameter Mw_matrix = 654000.0        # [Da]
+    parameter d50_um = 300.0              # [um]
+
+    connector out_solid
+        variable flow_rate = 0.0          # [kg/min]
+        variable P_matrix_mass = pectin_mass
+    end
+
+    metadata {
+        "Dyad": {
+            "placement": {
+                "diagram": {
+                    "iconName": "default",
+                    "x1": 0, "y1": 0, "x2": 100, "y2": 100, "rot": 0
+                }
+            },
+            "icons": {
+                "default": "dyad://PectinComponents/FeedstockSource.svg"
+            },
+            "ports": {
+                "out_solid": { "x": 100, "y": 50, "direction": "out" }
+            }
+        }
+    }
+end
+
+# ------------------------------------------------------------------------------
+# 2. Acid Metering Doser
+# ------------------------------------------------------------------------------
+component AcidDoser
+    parameter pH_target = 2.0             # [dimensionless]
+    parameter citric_acid_conc = 0.0      # [mol/L]
+
+    connector out_liquid
+        variable pH = pH_target
+        variable C_citric = citric_acid_conc
+    end
+
+    metadata {
+        "Dyad": {
+            "placement": {
+                "diagram": {
+                    "iconName": "default",
+                    "x1": 0, "y1": 0, "x2": 100, "y2": 100, "rot": 0
+                }
+            },
+            "icons": {
+                "default": "dyad://PectinComponents/AcidDoser.svg"
+            },
+            "ports": {
+                "out_liquid": { "x": 100, "y": 50, "direction": "out" }
+            }
+        }
+    }
+end
+
+# ------------------------------------------------------------------------------
+# 3. Thermal Utility Jacket
+# ------------------------------------------------------------------------------
+component ThermalJacket
+    parameter T_setpoint_c = 80.0         # [deg C]
+    parameter ramp_rate_c_min = 2.5       # [deg C / min]
+
+    connector out_fluid
+        variable temperature = T_setpoint_c
+    end
+
+    metadata {
+        "Dyad": {
+            "placement": {
+                "diagram": {
+                    "iconName": "default",
+                    "x1": 0, "y1": 0, "x2": 100, "y2": 100, "rot": 0
+                }
+            },
+            "icons": {
+                "default": "dyad://PectinComponents/ThermalJacket.svg"
+            },
+            "ports": {
+                "out_fluid": { "x": 50, "y": 100, "direction": "out" }
+            }
+        }
+    }
+end
+
+# ------------------------------------------------------------------------------
+# 4. Batch Hydrolysis Reactor Core
+# ------------------------------------------------------------------------------
+component BatchHydrolysisReactor
+    # Reference Arrhenius parameters (T_ref = 80 C, pH_ref = 2.0)
+    parameter k_ref_ext = 0.035           # [1/min]
+    parameter Ea_ext = 45000.0            # [J/mol]
+    parameter n_ext = 1.0
+    parameter alpha = 1.0
+    parameter k_ref_hyd = 0.015           # [1/min]
+    parameter Ea_hyd = 65000.0            # [J/mol]
+    parameter n_hyd = 1.0
+    parameter k_ref_deg = 0.005           # [1/min]
+    parameter Ea_deg = 75000.0            # [J/mol]
+    parameter n_deg = 1.0
+    parameter k_ref_de = 0.012            # [1/min]
+    parameter Ea_de = 50000.0             # [J/mol]
+    parameter n_de = 1.0
+    parameter beta_mw = 1.0
+
+    # Inward Connectors
+    connector in_feed
+        variable flow_rate
+        variable P_matrix_mass
+    end
+
+    connector in_acid
+        variable pH
+        variable C_citric
+    end
+
+    connector in_thermal
+        variable temperature
+    end
+
+    # Outward Slurry Connector
+    connector out_slurry
+        variable P_matrix
+        variable P_sol
+        variable P_lowMW
+        variable P_loss
+        variable DE_product
+        variable Mw_product
+        variable Y_p
+    end
+
+    metadata {
+        "Dyad": {
+            "placement": {
+                "diagram": {
+                    "iconName": "default",
+                    "x1": 0, "y1": 0, "x2": 120, "y2": 120, "rot": 0
+                }
+            },
+            "icons": {
+                "default": "dyad://PectinComponents/BatchHydrolysisReactor.svg"
+            },
+            "ports": {
+                "in_feed":    { "x": 20, "y": 0, "direction": "in" },
+                "in_acid":    { "x": 80, "y": 0, "direction": "in" },
+                "in_thermal": { "x": 0,  "y": 60, "direction": "in" },
+                "out_slurry": { "x": 120, "y": 60, "direction": "out" }
+            }
+        }
+    }
+end
+
+# ------------------------------------------------------------------------------
+# 5. Multichannel Sensor Suite
+# ------------------------------------------------------------------------------
+component SensorArray
+    parameter sigma_A284 = 0.015          # [AU]
+    parameter sigma_Brix = 0.08           # [deg Brix]
+    parameter sigma_NIR = 0.005           # [dimensionless]
+
+    connector in_sample
+        variable P_sol
+        variable P_lowMW
+        variable P_loss
+        variable DE_product
+    end
+
+    connector out_telemetry
+        variable A284_signal
+        variable Brix_signal
+        variable NIR_signal
+    end
+
+    metadata {
+        "Dyad": {
+            "placement": {
+                "diagram": {
+                    "iconName": "default",
+                    "x1": 0, "y1": 0, "x2": 100, "y2": 100, "rot": 0
+                }
+            },
+            "icons": {
+                "default": "dyad://PectinComponents/SensorArray.svg"
+            },
+            "ports": {
+                "in_sample":     { "x": 0, "y": 50, "direction": "in" },
+                "out_telemetry": { "x": 100, "y": 50, "direction": "out" }
+            }
+        }
+    }
+end
+
+# ------------------------------------------------------------------------------
+# 6. Pectin Fractionation & Downstream Recovery
+# ------------------------------------------------------------------------------
+component PectinFractions
+    parameter recovery_efficiency = 0.90  # [fraction]
+
+    connector in_slurry
+        variable P_sol
+        variable P_lowMW
+        variable P_loss
+        variable DE_product
+        variable Mw_product
+    end
+
+    connector out_intact_pectin
+        variable mass_yield
+        variable DE
+        variable Mw
+    end
+
+    metadata {
+        "Dyad": {
+            "placement": {
+                "diagram": {
+                    "iconName": "default",
+                    "x1": 0, "y1": 0, "x2": 100, "y2": 100, "rot": 0
+                }
+            },
+            "icons": {
+                "default": "dyad://PectinComponents/PectinFractions.svg"
+            },
+            "ports": {
+                "in_slurry":         { "x": 0, "y": 50, "direction": "in" },
+                "out_intact_pectin": { "x": 100, "y": 50, "direction": "out" }
+            }
+        }
+    }
+end
+
+end # package PectinComponents

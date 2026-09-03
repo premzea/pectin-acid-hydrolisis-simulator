@@ -21,12 +21,35 @@ Base.@kwdef struct PectinFeedstockInput{T<:Real}
 end
 
 """
-    build_pectin_system(; name=:pectin_reactor)
+    build_pectin_system(; name=:pectin_reactor, gui_metadata=nothing)
 
 Builds the symbolic ModelingToolkit.jl (MTK) ODESystem for the V1.3 4-pool
 pectin acid hydrolysis cascade with mass-weighted property moments.
+
+# Dyad Studio Graphical Metadata
+```json
+{
+  "Dyad": {
+    "placement": {
+      "diagram": {
+        "iconName": "default",
+        "x1": 440, "y1": 280, "x2": 600, "y2": 460, "rot": 0
+      }
+    },
+    "icons": {
+      "default": "dyad://PectinComponents/BatchHydrolysisReactor.svg"
+    },
+    "ports": {
+      "in_feed":    { "x": 20, "y": 0, "direction": "in" },
+      "in_acid":    { "x": 80, "y": 0, "direction": "in" },
+      "in_thermal": { "x": 0,  "y": 60, "direction": "in" },
+      "out_slurry": { "x": 120, "y": 60, "direction": "out" }
+    }
+  }
+}
+```
 """
-function build_pectin_system(; name=:pectin_reactor)
+function build_pectin_system(; name=:pectin_reactor, gui_metadata=nothing)
     @independent_variables t
     D = Differential(t)
     
@@ -113,7 +136,12 @@ function build_pectin_system(; name=:pectin_reactor)
         Mw_product ~ ifelse((P_sol + P_lowMW) > 1e-12, (Q_MW_sol + Q_MW_lowMW) / (P_sol + P_lowMW), Mw_matrix)
     ]
     
-    return ODESystem(eqs, t; name=name)
+    default_gui = ModelingToolkit.GUIMetadata(
+        GlobalRef(ReactionNetwork, :BatchHydrolysisReactor),
+        Dict("iconName" => "default", "x1" => 440, "y1" => 280, "x2" => 600, "y2" => 460, "rot" => 0)
+    )
+    gmeta = something(gui_metadata, default_gui)
+    return ODESystem(eqs, t; name=name, gui_metadata=gmeta)
 end
 
 end # module ReactionNetwork
