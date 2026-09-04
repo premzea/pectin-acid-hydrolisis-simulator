@@ -54,14 +54,31 @@ def extract_trajectories(res, feedstock):
     Mw_low = np.full_like(t, 10000.0)
     return t, p_sol, p_low, DE_sol, Mw_sol, Mw_low
 
-def generate_experiment_data(cond, params):
+def generate_experiment_data(cond, params, fmu_runner=None):
     if len(cond) == 5:
         T, pH, C_citric, t_end, d50 = cond
     else:
         T, pH, C_citric, t_end = cond
         d50 = 300.0
-    res, feedstock = run_virtual_experiment(T, pH, C_citric, t_end, params, d50_um=d50)
-    t, p_sol, p_low, DE_sol, Mw_sol, Mw_low = extract_trajectories(res, feedstock)
+
+    if fmu_runner is not None:
+        fmu_res = fmu_runner(
+            temperature_celsius=float(T),
+            pH=float(pH),
+            time_min=float(t_end),
+            C_citric=float(C_citric),
+            output_interval_s=10.0,
+            pectin_mass_0=0.2333
+        )
+        t = np.array(fmu_res["time_points_s"]) / 60.0
+        p_sol = np.array(fmu_res["P_sol_trajectory"])
+        p_low = np.array(fmu_res["P_lowMW_trajectory"])
+        DE_sol = np.array(fmu_res["DE_sol_trajectory"])
+        Mw_sol = np.array(fmu_res["Mw_sol_trajectory"])
+        Mw_low = np.full_like(t, 10000.0)
+    else:
+        res, feedstock = run_virtual_experiment(T, pH, C_citric, t_end, params, d50_um=d50)
+        t, p_sol, p_low, DE_sol, Mw_sol, Mw_low = extract_trajectories(res, feedstock)
     
     sample_times = np.arange(0, t_end + 1e-3, 1.0)
     p_s_i = np.interp(sample_times, t, p_sol)
@@ -191,8 +208,9 @@ def calculate_error(theta_opt, theta_true):
     return np.mean(np.abs((theta_opt - theta_true) / theta_true)) * 100.0
 
 class CampaignManager:
-    def __init__(self, model_id="v1.3-full"):
+    def __init__(self, model_id="v1.3-full", fmu_runner=None):
         self.model_id = model_id
+        self.fmu_runner = fmu_runner
         self.schema = MODELS[model_id]
         self.truth = KineticParameters(
             k_ref_ext=0.05, Ea_ext=35000.0, alpha=1.0,
@@ -323,8 +341,8 @@ class CampaignManager:
         # 1. Optimal Experimental Design (OED)
         cond = self._acquisition_function()
         
-        # 2. Run Virtual Experiment (True Physics + Noise)
-        obs = generate_experiment_data(cond, self.schema.unpack(self.theta_true))
+        # 2. Run Virtual Experiment (True Physics + Noise via FMU)
+        obs = generate_experiment_data(cond, self.schema.unpack(self.theta_true), fmu_runner=self.fmu_runner)
         self.history.append(obs)
         
         # 3. Bayesian Inference (MCMC)
