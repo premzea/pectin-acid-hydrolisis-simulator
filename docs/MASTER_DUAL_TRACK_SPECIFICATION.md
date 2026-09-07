@@ -100,27 +100,21 @@ Version 3.2 solidifies the physical and epistemological boundary between Track A
 
 Ultrasound acts on the shared 4-pool depolymerization cascade:
 
-$$\boxed{
-\text{P}_{\text{matrix}}
-\xrightarrow{k_{\text{ext}}}
-\text{P}_{\text{sol}}
-\xrightarrow{k_{\text{hyd}}}
-\text{P}_{\text{lowMW}}
-\xrightarrow{k_{\text{deg}}}
-\text{P}_{\text{loss}}
-}$$
+$$P_{\text{matrix}} \xrightarrow{k_{\text{ext}}} P_{\text{sol}} \xrightarrow{k_{\text{hyd}}} P_{\text{lowMW}} \xrightarrow{k_{\text{deg}}} P_{\text{loss}}$$
 
 * **Extraction Rate (Solubilization)**:
   $$k_{\text{ext}}^{\text{US}} = k_{\text{ext}}^{\text{thermal}}(T, \text{pH}) \cdot a_s(d_{50}) \cdot \left[1 + \kappa_{\text{ext}} \left(\frac{P_{\text{acoustic}}}{V_{\text{slurry}}}\right)^{\beta_{\text{ext}}}\right]$$
-  *(where $a_s(d_{50})$ is the fresh-tissue specific surface area covariate).*
+  where $a_s(d_{50})$ is the fresh-tissue specific surface area covariate.
+
 * **Chain Scission / Hydrolysis Rate**:
   $$k_{\text{hyd}}^{\text{US}} = k_{\text{hyd}}^{\text{thermal}}(T, \text{pH}) \cdot \left[1 + \kappa_{\text{hyd}} \left(\frac{P_{\text{acoustic}}}{V_{\text{slurry}}}\right)^{\beta_{\text{hyd}}}\right]$$
+
 * **Monomer Degradation Rate**:
   $$k_{\text{deg}}^{\text{US}} = k_{\text{deg}}^{\text{thermal}}(T, \text{pH}) \cdot \left[1 + \kappa_{\text{deg}} \left(\frac{P_{\text{acoustic}}}{V_{\text{slurry}}}\right)^{\beta_{\text{deg}}}\right]$$
 
 ### Pareto Optimization Requirement
 High acoustic power accelerates mass transfer ($k_{\text{ext}}^{\text{US}}$) but risks hydrolyzing polymer chains ($k_{\text{hyd}}^{\text{US}}$), causing severe molecular weight loss ($M_w < 100\text{ kDa}$). Optimization requires simultaneous fitting of the response vector:
-$$\mathbf{y} = [Y_{\text{APSP}}, C_{\text{GalA}}, DE, M_w]^T$$
+$$\mathbf{y} = \begin{bmatrix} Y_{\text{APSP}} \\ C_{\text{GalA}} \\ DE \\ M_w \end{bmatrix}$$
 
 ---
 

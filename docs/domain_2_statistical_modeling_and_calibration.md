@@ -10,19 +10,7 @@
 
 The digital twin models pectin extraction as a **single shared acid-catalyzed depolymerization cascade**, wherein ultrasound acts as an external physical driving force modifying mass transfer and polymer degradation:
 
-$$\boxed{
-\text{Feedstock State}
-\xrightarrow{\text{Transport}}
-\text{P}_{\text{matrix}}
-\xrightarrow{k_{\text{ext}}(T, \text{pH}, P_{\text{US}})}
-\text{P}_{\text{sol}}
-\xrightarrow{k_{\text{hyd}}(T, \text{pH}, P_{\text{US}})}
-\text{P}_{\text{lowMW}}
-\xrightarrow{k_{\text{deg}}(T, \text{pH}, P_{\text{US}})}
-\text{P}_{\text{loss}}
-\xrightarrow{\text{Recovery}}
-\text{Recovered Product}
-}$$
+$$P_{\text{matrix}} \xrightarrow{k_{\text{ext}}(T, \text{pH}, P_{\text{US}})} P_{\text{sol}} \xrightarrow{k_{\text{hyd}}(T, \text{pH}, P_{\text{US}})} P_{\text{lowMW}} \xrightarrow{k_{\text{deg}}(T, \text{pH}, P_{\text{US}})} P_{\text{loss}}$$
 
 ### A. Track-Specific Transport Modifiers
 1. **Track A (Dried & Sieved Fractions)**:
