@@ -1,6 +1,6 @@
 # Domain 1: Biochemical Engineering & Physical Extraction Protocols
 
-**Document Version**: 2.1 (Incorporating Engineering Peer Review)  
+**Document Version**: 2.2 (Incorporating Epistemological & Phased Review)  
 **Parent Document**: [`MASTER_DUAL_TRACK_SPECIFICATION.md`](file:///Z:/home/eduzea/projects/pectin-extraction/pectin-acid-hydrolisis-simulator/docs/MASTER_DUAL_TRACK_SPECIFICATION.md)  
 **Target Audience**: Chemical Engineers, Biochemists, Food Technologists, Wet-Lab Operators
 
@@ -10,9 +10,12 @@
 
 Pectin extraction from passion-fruit (*Passiflora edulis*) peel involves the solubilization and selective chain scission of protopectin anchored within the cell-wall matrix of the pericarp and albedo. Structurally, passion fruit pectin consists predominantly of a **homogalacturonan (HG)** backbone ($\alpha$-(1 $\to$ 4)-linked D-galacturonic acid units), partially methyl-esterified at the C-6 carboxyl group, with neutral sugar side chains (arabinan, galactan, rhamnogalacturonan-I).
 
-This document establishes the physical unit operations, chemical kinetic mechanisms, analytical chemistry standard operating procedures (SOPs), and recovery protocols across both operational tracks, incorporating rigorous peer-review controls:
-* **Track A**: Standardized dried peel, closed jacketed stirred reactor with reflux condensation, active pH tracking/dosing, multi-timepoint thermal quenching, and offline reference assays.
-* **Track B**: Fresh rind comminution, 40-kHz ultrasound-assisted extraction (UAE) with thermal baseline controls, at-line multi-timepoint spectrophotometry with sample-blank matrix correction, and low-temperature vacuum oven product recovery.
+### Epistemological Principle: Separating Reality from Model Assumptions
+To maintain scientific integrity, the project strictly classifies all physical parameters:
+* **Measured Quantities**: Physical observables measured directly with calibrated instruments ($T$, $\text{pH}$, gross masses, liquid volumes, raw spectrophotometric absorbances $\mathbf{A}$, gravimetric dry solids $m_{\text{dry\_precipitate}}$).
+* **Calibrated Parameters**: Numerical properties inferred statistically from empirical data ($k_{\text{ext,ref}}$, $E_{\text{ext}}$, $k_{\text{hyd,ref}}$, $E_{\text{hyd}}$, soft-sensor regression weights).
+* **Assumed / Standardized Quantities**: Working conventions fixed by design ($d_{\text{ref}} = 300\,\mu\text{m}$, $\text{pH}_{\text{ref}} = 2.0$, $T_{\text{ref}} = 80^\circ\text{C}$, $\gamma_{US} \equiv 1.0$).
+* **Hypotheses / Informative Priors**: Mechanistic concepts that guide thinking but are **not** treated as hard truths without independent verification (e.g., the partitioning of acoustic energy into sensible heat vs. mechanical cavitation work; the fresh tissue accessibility ratio $\Omega_{\text{fresh}}$).
 
 ---
 
@@ -23,23 +26,24 @@ To isolate chemical reaction kinetics from raw fruit moisture variations ($X_{w,
 
 1. **Forced-Air Dehydration**: Fresh peels are sliced into $2 \times 2\text{ cm}$ strips and dried in a forced-air convection oven at $60^\circ\text{C}$ for 16–24 hours until reaching stable equilibrium moisture ($X_w \approx 0.06 - 0.08\text{ g/g wb}$).
 2. **Knife Milling & ASTM Classification**: Dried peels are pulverized using a rotary knife mill and sieved through stacked ASTM testing sieves:
-   * Fine cut: $d_{50} = 150\,\mu\text{m}$ (ASTM 100)
-   * Reference standard: $d_{\text{ref}} = 300\,\mu\text{m}$ (ASTM 50)
-   * Coarse cut: $d_{50} = 600\,\mu\text{m}$ (ASTM 30)
+   * Fine cut: $d_{50} = 150\,\mu\text{m}$ (passes 100 mesh)
+   * Reference standard: $d_{\text{ref}} = 300\,\mu\text{m}$ (passes 50 mesh)
+   * Coarse cut: $d_{50} = 600\,\mu\text{m}$ (passes 30 mesh)
 3. **Transport Accessibility Factor**:
    $$\phi_d = \left(\frac{d_{\text{ref}}}{d_{50}}\right)^\alpha \quad (\alpha \in [0.5, 2.0])$$
 
 ### B. Track B: Food-Processor Comminution of Fresh Rind
-Track B eliminates the energy-intensive pre-drying step, processing fresh peel directly from juice extraction:
+Track B eliminates the pre-drying step, processing fresh peel directly from juice extraction:
 
 1. **Comminution Procedure**: Fresh passion fruit peels (rind + albedo, residual moisture $X_{w,0} \approx 81\text{--}86\%$) are charged into a commercial food processor equipped with S-curved stainless steel blades. Peels are pulsed in 15-second cycles to generate uniform fragments with characteristic dimension $d_{50} \in [500, 2000]\,\mu\text{m}$.
 2. **Specific Interfacial Area**:
    $$a_{s,\text{fresh}} = \frac{6}{\rho_s \cdot d_{50}} \cdot \Phi_{s,\text{fresh}} \quad [\text{m}^2/\text{kg}]$$
    where $\Phi_{s,\text{fresh}} \approx 0.65$ is the sphericity shape factor of fresh shredded fragments.
-3. **Cross-Track Harmonization & Tissue Matrix Factor**:
-   Drying collapses cellular porosity and hornifies pectin fibrils. To harmonize the transport scaling across tracks without conflating physical mechanisms:
+3. **Tissue Matrix Accessibility (Hypothesis vs. Identification)**:
+   Drying collapses cellular porosity and hornifies pectin fibrils. The digital twin models this via a matrix accessibility modifier $\Omega_{\text{matrix}}$:
    $$\phi_{d,\text{eff}} = \left(\frac{d_{\text{ref}}}{d_{50}}\right)^\alpha \cdot \Omega_{\text{matrix}}$$
-   where $\Omega_{\text{matrix}} \equiv 1.0$ for standardized dried peel (Track A) and $\Omega_{\text{matrix}} = \Omega_{\text{fresh}} \approx 1.25\text{--}1.60$ for fresh uncollapsed cellular parenchyma (Track B), identified via fresh-tissue thermal control runs.
+   * By definition, $\Omega_{\text{matrix}} \equiv 1.0$ for standardized dried peel (Track A).
+   * For fresh tissue (Track B), $\Omega_{\text{fresh}}$ is treated strictly as an **unknown estimand** (prior: $\Omega_{\text{fresh}} \sim \text{Normal}(1.35, 0.25)$) to be identified by comparing fresh-rind thermal baseline extractions against Track A dried extractions under identical temperature and acidity.
 4. **Slurry Formulation**:
    * Fresh rind wet mass: $m_{\text{fresh}}$ (e.g., $100.0\text{ g}$)
    * Extraction water mass: $m_{\text{water}}$ (e.g., $500.0\text{ g}$)
@@ -62,12 +66,12 @@ Track B eliminates the energy-intensive pre-drying step, processing fresh peel d
    └─────────────────────────────┘               └─────────────────────────────┘
 ```
 
-### A. Track A: Jacketed Stirred Glass Reactor (Engineering Hardening)
+### A. Track A: Jacketed Stirred Glass Reactor
 1. **Reflux Evaporation Control**:
-   * *Critical Engineering Control*: To prevent water vapor loss at $95^\circ\text{C}$ over 120 min (which causes progressive concentration drift of acid molarity and slurry density), the reactor head is fitted with a **water-cooled Dimroth/Graham reflux condenser** operated with $15^\circ\text{C}$ coolant. Evaporative volume loss is maintained at $< 0.2\%$ over 2 hours.
+   * To prevent water vapor loss at $95^\circ\text{C}$ over 120 min, the reactor head is fitted with a **water-cooled Dimroth/Graham reflux condenser** operated with $15^\circ\text{C}$ coolant. Evaporative volume loss is maintained at $< 0.2\%$ over 2 hours.
 2. **Active pH Mode & Carboxyl Group Tracking**:
    * Saponification of methyl esters during extraction releases free galacturonic carboxyl groups ($-\text{COOH}$), causing acid-base drift.
-   * *Protocol*: The reactor logs continuous $\text{pH}(t)$ via an autoclavable glass combination electrode. For constant-pH studies, an automated peristaltic micro-dosing pump dispenses $0.25\text{ M NaOH}$ / $0.25\text{ M citric acid}$. If un-dosed, the continuous $\text{pH}(t)$ trajectory is explicitly ingested into the numerical kinetic integral $\tau_k = \int_0^t k(T(s), \text{pH}(s))\,ds$.
+   * *Protocol*: Continuous $\text{pH}(t)$ is logged via an autoclavable glass combination electrode. If un-dosed, the continuous $\text{pH}(t)$ trajectory enters the numerical kinetic integral $\tau_k = \int_0^t k(T(s), \text{pH}(s))\,ds$. For constant-pH experiments, a peristaltic micro-dosing pump dispenses $0.25\text{ M NaOH}$ / $0.25\text{ M citric acid}$.
 3. **Vessel Working Volume & Aliquot Budget Constraints**:
    * Nominal vessel size: $2.0\text{ L}$ (preferred working volume: $1.2\text{--}1.5\text{ L}$).
    * For a $1.2\text{ L}$ charge, 4 aliquots $\times 12.0\text{ mL} = 48.0\text{ mL}$ total ($4.0\%$ cumulative withdrawal, strictly meeting the $< 5\%$ non-destructive limit).
@@ -82,18 +86,17 @@ Track B eliminates the energy-intensive pre-drying step, processing fresh peel d
 ### B. Track B: Ultrasound Bath Chamber (UAE) & Thermal Baseline
 1. **Acoustic Field & Transducer Configuration**:
    * $40\text{ kHz}$ piezoelectric transducer array bonded to the tank base, delivering nominal electrical power $P_{\text{elec}} \in [50, 300]\text{ W}$.
-   * Frequency exponent $\gamma_{US}$ is **fixed to $\gamma_{US} \equiv 1.0$** from literature consensus (single-frequency 40 kHz systems cannot identify frequency scaling).
-2. **Calorimetric Acoustic Power & Sensible Heat Fraction**:
-   * Acoustic power delivered to the fluid is determined by solvent water calorimetry:
+   * Frequency exponent $\gamma_{US}$ is **fixed by convention to $\gamma_{US} \equiv 1.0$** (single-frequency 40 kHz systems cannot identify frequency scaling).
+2. **Calorimetric Acoustic Power & Energy Partition Modeling**:
+   * The actual acoustic power absorbed by the liquid volume is determined experimentally by pure-water calorimetry:
      $$P_{\text{acoustic}} = m_{\text{cal}} C_p \left(\frac{dT}{dt}\right)_{\text{initial}}$$
-     giving coupling efficiency $\eta_{\text{coupling}} = P_{\text{acoustic}} / P_{\text{elec}} \approx 0.18\text{--}0.32$.
-   * Sensible heat dissipation fraction $\xi_{\text{thermal}} \approx 0.88$ (the remaining $12\%$ performs cavitational mechanical shear, cell disruption, and acoustic streaming work):
-     $$Q_{US} = \xi_{\text{thermal}} \cdot P_{\text{acoustic}}$$
+     giving overall electro-acoustic coupling efficiency $\eta_{\text{coupling}} = P_{\text{acoustic}} / P_{\text{elec}}$.
+   * *Epistemological Warning*: The physical partition of acoustic energy into sensible thermal heating versus cavitational mechanical work is **unidentified** without independent cavitation dosimetry (e.g. hydrophone or sonoluminescence). Therefore, the digital twin **does not hardcode an arbitrary 88/12 split**. Instead, the model directly measures bulk fluid temperature $T_{\text{slurry}}(t)$ and infers the **net effective kinetic enhancement** $\psi_{US}$ above the matched thermal control.
 3. **RTD Placement & Ultrasonic Artifact Suppression**:
    * Slurry PT100 probe is housed in a thin PTFE vibration-damping sleeve positioned centrally in the vessel, $3\text{ cm}$ above the bottom, avoiding acoustic standing wave antinodes.
    * Readings are validated by brief 5-second acoustic power pauses at sampling intervals.
 4. **Mandatory In-Track Thermal Control Run**:
-   * *Critical Engineering Control*: To prevent confounding ultrasound cavitation with fresh-vs-dried feedstock matrix differences, Track B includes mandatory **Fresh-Rind Thermal Baseline Runs** ($P_{\text{elec}} = 0\text{ W}$, identical fresh slurry, heated in the same bath):
+   * *Critical Causal Comparison*: To cleanly separate acoustic cavitation from thermal heating and fresh-tissue matrix effects, Track B includes mandatory **Fresh-Rind Thermal Baseline Runs** ($P_{\text{elec}} = 0\text{ W}$, identical fresh slurry, heated in the same bath):
      $$\text{Pure Acoustic Enhancement} = Y_{\text{UAE,fresh}}(T, P_{\text{elec}}) - Y_{\text{thermal,fresh}}(T, P_{\text{elec}} = 0)$$
 
 ---
@@ -136,8 +139,7 @@ To ensure mathematical consistency across analytical concentrations and gravimet
 ### A. Track A: Primary Offline Reference Assays
 
 #### SOP A-1: Alcohol-Precipitated Soluble Pectin (APSP) Gravimetric Yield
-*(Formerly labeled "AIR gravimetric" — renamed to eliminate food science ambiguity with matrix insoluble residue)*:
-1. Centrifuge the quenched reaction slurry at $4,000 \times g$ for 15 minutes to separate clear supernatant liquor from spent solid cake.
+1. Centrifuge the reaction slurry at $4,000 \times g$ for 15 minutes to separate clear supernatant liquor from spent solid cake.
 2. Mix $10.0\text{ mL}$ of supernatant liquor with $20.0\text{ mL}$ of absolute ethanol ($2:1\text{ v/v}$, final ethanol $\ge 64\%$).
 3. Incubate at $4^\circ\text{C}$ for 2 hours for complete flocculation.
 4. Filter precipitate through pre-weighed Whatman GF/A glass microfiber filters.
@@ -199,11 +201,28 @@ $$\text{Spike Recovery} = \frac{C_{\text{spiked}} - C_{\text{unspiked}}}{C_{\tex
 
 ---
 
-## 7. Dual-Target Performance Metric: GalA Composition Indicator
+## 7. Dual-Target Metric: GalA Composition / Purity Proxy
 
 1. **Chemical Recovery** (GalA extracted in liquor):
    $$m_{\text{GalA,total}} = C_{\text{GalA,filtrate}} \cdot \left(\frac{m_{\text{filtrate\_total}}}{\rho_{\text{filtrate}}}\right) \cdot 10^{-3} \quad [\text{g}]$$
 2. **Gravimetric Solids Recovery** (Dry precipitate mass):
    $$m_{\text{dry\_precipitate,scaled}} = m_{\text{dry\_precipitate,recovered}} \cdot \left(\frac{m_{\text{filtrate\_total}}}{m_{\text{precipitation\_stream}}}\right) \quad [\text{g}]$$
-3. **GalA-Based Composition / Purity Indicator**:
+3. **GalA-Based Composition / Purity Proxy**:
    $$I_{\text{GalA}} = \frac{m_{\text{GalA,total}}}{m_{\text{dry\_precipitate,scaled}}}$$
+
+*Scientific Clarification*: $I_{\text{GalA}}$ is explicitly designated as a **composition/purity proxy**, acknowledging that the denominator ($m_{\text{dry\_precipitate}}$) consists of total alcohol-insoluble solids including residual neutral polysaccharides, polyphenols, co-precipitated proteins, and salts. It serves as an empirical indicator of extract quality rather than a pure chemical purity percentage.
+
+---
+
+## 8. Phase 0 Physical Repeatability Checklist
+
+Before executing higher-level Bayesian inference or OED campaigns, the laboratory must demonstrate baseline physical repeatability across 5 consecutive benchmark runs:
+
+| Operational Check | Acceptance Target | Diagnostic Procedure |
+| :--- | :--- | :--- |
+| **Thermal Control Stability** | $\pm 0.5^\circ\text{C}$ at steady state | Continuous logging at 80 °C for 60 min |
+| **pH Stability / Tracking** | Drift $< 0.10\text{ pH}$ units | Autoclavable probe in stirred buffer |
+| **Reflux Evaporative Loss** | $< 0.3\%$ mass loss over 120 min | Weighing reactor before and after run at 95 °C |
+| **Filtration Mass Recovery** | Filtrate mass repeatability $CV < 2.5\%$ | Standardized Büchner vacuum filtration |
+| **Precipitation & Drying** | Dry solids mass $CV < 4.0\%$ | 5 identical aliquots precipitated and vacuum-dried |
+| **Colorimeter Reproducibility**| Absorbance repeatability $CV < 1.5\%$ | 5 repeated readings of identical GalA standard |
