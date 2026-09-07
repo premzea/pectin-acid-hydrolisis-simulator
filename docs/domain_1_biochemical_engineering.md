@@ -1,46 +1,44 @@
 # Domain 1: Biochemical Engineering & Physical Extraction Protocols
 
-**Document Version**: 3.0 (Unified Fresh-Rind Feedstock Architecture)  
+**Document Version**: 3.1 (Ultrasound-Assisted Acid Extraction Framing)  
 **Parent Document**: [`MASTER_DUAL_TRACK_SPECIFICATION.md`](file:///Z:/home/eduzea/projects/pectin-extraction/pectin-acid-hydrolisis-simulator/docs/MASTER_DUAL_TRACK_SPECIFICATION.md)  
 **Target Audience**: Chemical Engineers, Biochemists, Food Technologists, Wet-Lab Operators
 
 ---
 
-## 1. Executive Scope & Unified Feedstock Principle
+## 1. Executive Scope & Chemistry Fundamentals
 
-To eliminate biological and dehydration artifacts, **Track A and Track B share the exact same fresh passion-fruit rind feedstock**, prepared using an identical mechanical comminution protocol:
+Pectin extraction from passion-fruit (*Passiflora edulis*) peel involves the solubilization and selective chain scission of protopectin anchored within the cell-wall matrix of the pericarp and albedo. Structurally, passion fruit pectin consists predominantly of a **homogalacturonan (HG)** backbone ($\alpha$-(1 $\to$ 4)-linked D-galacturonic acid units), partially methyl-esterified at the C-6 carboxyl group, with neutral sugar side chains (arabinan, galactan, rhamnogalacturonan-I).
+
+### The Shared Acid-Medium Mechanism
+A critical scientific principle governs both tracks:
+> **Ultrasound-Assisted Extraction (UAE) is not an alternative extraction chemistry. It is ultrasound-enhanced acid extraction in an acidified aqueous solvent.**
+
+Low pH (food-grade citric acid, $\text{pH } 1.5\text{--}3.0$) provides the chemical driving force for:
+1. Protonation of carboxylate ions, neutralizing negative charge repulsion.
+2. Acid-catalyzed cleavage of covalent and ionic bonds anchoring protopectin to cellulose and hemicellulose microfibrils.
+3. Partial de-esterification and chain scission of the solubilized polymer.
+
+Track A and Track B share the **exact same fresh passion-fruit rind** and the **exact same citric acid medium**. Track A identifies the baseline thermal-acid response, while Track B introduces ultrasound to accelerate mass transfer and tissue permeabilization.
 
 ```text
-               FRESH PASSION-FRUIT PEEL (PERICARP + ALBEDO)
-                                    │
-                       Batch Moisture Determination
-                         (Halogen Analyzer, X_w,0)
-                                    │
-                     Standardized Comminution Protocol
-                    (Commercial Food Processor, 15-s pulses)
-                                    │
-                                    ▼
-                STANDARDIZED FRESH RIND SLURRY FRACTION
-                    (d50 in [500, 2000] µm, uniform lot)
-                                    │
-                     ┌──────────────┴──────────────┐
-                     ▼                             ▼
-                 TRACK A                       TRACK B
-       THERMAL REFERENCE REACTOR        UAE EXTRACTION CHAMBER
-         (Jacketed Stirred Tank)           (Ultrasound Bath)
+                           ACIDIFIED WATER (CITRIC ACID, pH 1.5 - 3.0)
+                                                │
+                                                ▼
+                                    FRESH PASSION-FRUIT RIND
+                                 (Measured X_w,0, standardized d50)
+                                                │
+                         ┌──────────────────────┴──────────────────────┐
+                         │                                             │
+                         ▼                                             ▼
+                     TRACK A                                       TRACK B
+            THERMAL ACID EXTRACTION                      ULTRASOUND-ASSISTED ACID
+             (Mechanistic Reference)                     EXTRACTION & SOFT SENSOR
 ```
-
-By standardizing on fresh rind:
-1. Both tracks operate on **native, un-hornified plant cell walls** with natural porosity.
-2. The empirical matrix correction factor ($\Omega_{\text{fresh}}$) is **deleted**.
-3. The comparison between stirred thermal hydrolysis and ultrasound cavitation is **causally clean and unconfounded**.
-4. Dried peel is retained strictly as an optional secondary study (*Appendix A*).
 
 ---
 
 ## 2. Common Fresh-Rind Conditioning Protocol
-
-For every experimental run (Track A or Track B):
 
 1. **Feedstock Selection**: Peels from ripe purple passion fruit (*Passiflora edulis*) are rinsed with deionized water to remove residual pulp and dirt, and drained.
 2. **Moisture Determination**: Three representative $5.0\text{ g}$ subsamples are tested using a halogen moisture analyzer ($105^\circ\text{C}$ to constant weight) to record the precise batch moisture fraction:
@@ -57,9 +55,9 @@ For every experimental run (Track A or Track B):
 
 ---
 
-## 3. Extraction Reaction Operations
+## 3. Extraction Operations: Thermal vs. Acoustic-Acid Physics
 
-### A. Track A: Jacketed Stirred Glass Reactor (Thermal Reference)
+### A. Track A: Thermal Acid Extraction (Mechanistic Reference)
 * **Vessel**: $1.2\text{--}2.0\text{ L}$ torispherical jacketed borosilicate glass vessel.
 * **Reflux Vapor Control**: Fitted with a water-cooled Dimroth/Graham condenser ($15^\circ\text{C}$ coolant) guaranteeing $< 0.2\%$ evaporative loss over 120 minutes.
 * **Agitation**: Overhead mechanical stirrer with a PTFE anchor or pitched-blade turbine ($250\text{--}400\text{ RPM}$).
@@ -67,13 +65,16 @@ For every experimental run (Track A or Track B):
 * **Aliquot Budget**: Minimum working volume $\ge 1.2\text{ L}$. Four aliquots $\times 12.0\text{ mL} = 48.0\text{ mL} \le 4.0\%$ cumulative withdrawal.
 * **Thermal Quenching**: Aliquots drawn into thin-walled stainless-steel immersion vials in a $-10^\circ\text{C}$ glycol bath, cooling to $< 25^\circ\text{C}$ in $15 \pm 3\text{ seconds}$.
 
-### B. Track B: Ultrasound Bath Chamber (UAE Enhancement)
+### B. Track B: Ultrasound-Assisted Acid Extraction (UAE)
 * **Acoustic Field**: $40\text{ kHz}$ transducer array bonded to tank base, delivering nominal electrical power $P_{\text{elec}} \in [50, 300]\text{ W}$.
-* **Calorimetric Power Calibration**: Acoustic power absorbed by liquid is calibrated via pure-water calorimetry:
-  $$P_{\text{acoustic}} = m_{\text{cal}} C_p \left(\frac{dT}{dt}\right)_{\text{initial}}$$
-* **Unpartitioned Net Cavitation Modeling**: The twin measures bulk fluid temperature $T_{\text{slurry}}(t)$ directly and attributes kinetic differences above the matched thermal control directly to $\psi_{US}$.
-* **Mandatory Fresh Thermal Control**: Every ultrasound condition is paired with a fresh-rind thermal control ($P_{\text{elec}} = 0\text{ W}$) at matched bulk temperature.
-* **Multi-Timepoint Micro-Aliquoting**: $5.0\text{ mL}$ micro-aliquots drawn at $t \in \{10, 20, 40, 60\}\text{ min}$ via in-situ PTFE dip tube, immediately syringe-filtered ($0.45\,\mu\text{m}$) for at-line spectrophotometry.
+* **Dual Physical Action of Ultrasound**:
+  1. *Solubilization Acceleration*: Transient acoustic cavitation bubbles collapse near plant cell surfaces, creating microjets ($v > 100\text{ m/s}$) that perforate parenchymal cell walls and strip boundary-layer mass-transfer resistance ($k_{\text{ext}}^{\text{US}} > k_{\text{ext}}^{\text{thermal}}$).
+  2. *Polymer Degradation Risk*: Intense hydrodynamic shear stresses and localized thermal hotspots around collapsing cavities can induce chain scission of solubilized pectin molecules ($k_{\text{hyd}}^{\text{US}} \ge k_{\text{hyd}}^{\text{thermal}}$), reducing molecular weight ($M_w$) and altering $DE$.
+* **Quality Optimization Imperative**:
+  * *Higher yield is not automatically better.*
+  * Aggressive sonication can yield high apparent pectin mass that is severely degraded ($M_w < 100\text{ kDa}$), losing gelling and emulsifying capacity.
+  * Tracking **Yield + GalA + DE + Molecular Weight** simultaneously is essential to identify the Pareto-optimal extraction regime.
+* **Mandatory Fresh Thermal Control**: Every ultrasound condition is paired with an identical fresh-rind run with sonication turned OFF ($P_{\text{elec}} = 0\text{ W}$) in the same bath at matched fluid temperature.
 
 ---
 
@@ -104,9 +105,9 @@ For every experimental run (Track A or Track B):
 
 ---
 
-## 5. The Shared Analytical Triangle
+## 5. The Shared Analytical Backbone
 
-Both Track A and Track B feed the **identical analytical triangle**:
+Both Track A and Track B feed the **identical analytical backbone**:
 
 $$\boxed{
 \text{Gravimetric Recovery } (m_{\text{dry\_precipitate}})
@@ -114,6 +115,8 @@ $$\boxed{
 \text{GalA Concentration } (C_{\text{GalA}})
 \longleftrightarrow
 \text{Pectin-Equivalent } (C_{\text{pectin-equiv}})
+\longleftrightarrow
+\text{DE \& } M_w
 }$$
 
 ### A. Alcohol-Precipitated Soluble Pectin (APSP) Gravimetric Yield
@@ -138,15 +141,16 @@ $$\boxed{
   $$C_{\text{pectin-equiv,measured}} = \frac{A_{\text{net}}(590) - A_{0,\text{Cu}}}{S_{\text{Cu}}}$$
   $$C_{\text{pectin-equiv,filtrate}} = C_{\text{pectin-equiv,measured}} \times DF$$
 
-### D. GalA-Based Composition / Purity Proxy
-$$I_{\text{GalA}} = \frac{m_{\text{GalA,total}}}{m_{\text{dry\_precipitate,scaled}}}$$
-*Explicitly designated as a composition/purity proxy*, acknowledging that the denominator consists of total alcohol-insoluble solids including residual neutral polysaccharides, polyphenols, co-precipitated proteins, and salts.
+### D. Degree of Esterification (DE) & Molecular Weight ($M_w$)
+* $DE$ measured via USP double-titration (saponification with $0.25\text{ M NaOH}$).
+* $M_w$ measured via HPSEC-MALLS-RI ($dn/dc = 0.146\text{ mL/g}$).
+* *Key Diagnostic Ratio*:
+  $$\text{Degradation Index} = \frac{M_{w,\text{UAE}}}{M_{w,\text{thermal}}}$$
+  captures whether ultrasound enhancement was achieved without excessive chain scission.
 
 ---
 
 ## 6. Phase 0 Physical Repeatability Checklist
-
-Before executing higher-level Bayesian inference or OED campaigns, the laboratory must demonstrate baseline physical repeatability across 5 consecutive benchmark runs:
 
 | Operational Check | Acceptance Target | Diagnostic Procedure |
 | :--- | :--- | :--- |
@@ -157,11 +161,3 @@ Before executing higher-level Bayesian inference or OED campaigns, the laborator
 | **Filtration Mass Recovery** | Filtrate mass repeatability $CV < 2.5\%$ | Standardized Büchner vacuum filtration |
 | **Precipitation & Drying** | Dry solids mass $CV < 4.0\%$ | 5 identical aliquots precipitated and vacuum-dried |
 | **Colorimeter Reproducibility**| Absorbance repeatability $CV < 1.5\%$ | 5 repeated readings of identical GalA standard |
-
----
-
-## Appendix A: Secondary Study on Dried Peel (Optional Post-V1)
-
-Dried, knife-milled peel ($d_{50} = 150, 300, 600\,\mu\text{m}$) is retained as a specialized reference material for secondary research:
-* *Research Question*: *"How does convective drying and cellular hornification alter protopectin availability and molecular weight?"*
-* *Protocol*: Executed by drying fresh peel at $60^\circ\text{C}$ and milling per ASTM specifications, comparing extraction yield against the fresh-rind thermal reference.
