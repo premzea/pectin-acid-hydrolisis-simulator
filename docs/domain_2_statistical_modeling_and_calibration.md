@@ -1,6 +1,6 @@
 # Domain 2: Mathematical Modeling & Statistical Calibration Architecture
 
-**Document Version**: 2.0  
+**Document Version**: 2.1 (Incorporating Statistical Peer Review)  
 **Parent Document**: [`MASTER_DUAL_TRACK_SPECIFICATION.md`](file:///Z:/home/eduzea/projects/pectin-extraction/pectin-acid-hydrolisis-simulator/docs/MASTER_DUAL_TRACK_SPECIFICATION.md)  
 **Target Audience**: Bioprocess Modelers, Applied Mathematicians, Chemometricians, Bayesian Statisticians
 
@@ -10,10 +10,11 @@
 
 This document specifies the mathematical formulations, state-space representations, chemometric soft-sensor vector models, Fisher Information optimal experimental design (OED), and Bayesian parameter inference pipelines of the Pectin Digital Twin ecosystem.
 
-The twin integrates:
-1. A **4-pool mechanistic kinetic model** governing mass conservation and property moments.
-2. An **at-line multi-wavelength chemometric soft sensor** mapping multi-channel spectrophotometric vectors directly to chemical concentrations ($C_{\text{GalA}}$, $C_{\text{pectin-equiv}}$).
-3. A **Bayesian calibration engine** that infers reference Arrhenius rates, activation energies, particle accessibility scaling, and ultrasonic coupling parameters with full posterior uncertainty quantification.
+Incorporating rigorous peer-review critiques, this specification resolves key identifiability challenges:
+1. Formulates dedicated **OED calibration matrices with true process replicates** for both Track A and Track B.
+2. Resolves structural unidentifiability by explicitly fixing the single-transducer frequency exponent ($\gamma_{US} \equiv 1.0$).
+3. Introduces a two-tier observation variance model ($\mathbf{\Sigma}_{\text{total}} = \mathbf{\Sigma}_{\text{obs}} + \mathbf{\Sigma}_{\text{process}}$) separating analytical measurement error from run-to-run execution variance.
+4. Harmonizes particle accessibility across fresh and dried tissue using a biological matrix integrity factor ($\Omega_{\text{matrix}}$).
 
 ---
 
@@ -25,7 +26,7 @@ The extraction and depolymerization cascade is modeled across four distinct, mut
 ```text
   Protopectin in Plant Matrix (P_matrix)
                     │
-                    │ k_ext (T, pH, d50, P_acoustic)
+                    │ k_ext (T, pH, d50, P_acoustic, Ω_matrix)
                     ▼
        Soluble Intact Pectin (P_sol) ───────────────┐
                     │                               │
@@ -84,125 +85,128 @@ $$X_{\text{GalA,sol}}(t) = \frac{G_{\text{sol}}(t)}{P_{\text{sol}}(t)}$$
 
 ## 4. Reaction Kinetics & Environmental Modifiers
 
-To stabilize non-linear numerical parameter inference, rate constants are parameterized relative to an uncoupled reference state ($T_{\text{ref}} = 353.15\text{ K} = 80^\circ\text{C}$, $\text{pH}_{\text{ref}} = 2.0$):
+Rate constants are parameterized relative to an uncoupled reference state ($T_{\text{ref}} = 353.15\text{ K} = 80^\circ\text{C}$, $\text{pH}_{\text{ref}} = 2.0$):
 
 $$k_i(T, \text{pH}) = k_{i,\text{ref}} \exp\left[-\frac{E_i}{R}\left(\frac{1}{T_K} - \frac{1}{T_{\text{ref}}}\right)\right] 10^{n_i(\text{pH}_{\text{ref}} - \text{pH})}$$
 
-### A. Granulometric Transport Scaling
-$$\phi_d(d_{50}) = \left(\frac{d_{\text{ref}}}{d_{50}}\right)^\alpha \quad (d_{\text{ref}} = 300\,\mu\text{m})$$
+### A. Harmonized Interfacial Transport Modifier
+$$\phi_{d,\text{eff}}(d_{50}) = \left(\frac{d_{\text{ref}}}{d_{50}}\right)^\alpha \cdot \Omega_{\text{matrix}}$$
+* $\Omega_{\text{matrix}} \equiv 1.0$ for standardized dried and sieved powder (Track A).
+* $\Omega_{\text{matrix}} = \Omega_{\text{fresh}} \approx 1.25\text{--}1.60$ for fresh un-collapsed tissue (Track B), estimated from paired fresh thermal controls.
 
 ### B. Phenomenological Ultrasound Cavitation Enhancement
-In Track B, acoustic cavitation intensifies cell rupture and micro-mixing:
 $$P_{\text{acoustic}} = \eta_{\text{coupling}} \cdot P_{\text{elec}}$$
 $$\psi_{US} = 1.0 + \kappa_{US} \left(\frac{P_{\text{acoustic}}}{V_{\text{slurry}}}\right)^{\beta_{US}} \left(\frac{40\text{ kHz}}{f_{US}}\right)^{\gamma_{US}}$$
-$$k_{\text{ext,effective}} = k_{\text{ext,chem}}(T, \text{pH}) \cdot \phi_d(d_{50}) \cdot \psi_{US}(P_{\text{acoustic}})$$
+* *Structural Identifiability Constraint*: Because the bath transducer is single-frequency ($40\text{ kHz}$), $\gamma_{US}$ is mathematically unidentifiable from single-instrument data. It is **fixed to $\gamma_{US} \equiv 1.0$** based on acoustic cavitation literature consensus.
+$$k_{\text{ext,effective}} = k_{\text{ext,chem}}(T, \text{pH}) \cdot \phi_{d,\text{eff}}(d_{50}) \cdot \psi_{US}(P_{\text{acoustic}})$$
 
 ---
 
-## 5. At-Line Multi-Channel Vector Soft Sensor
+## 5. At-Line Multi-Channel Vector Chemometric Model
 
-Rather than interpolating to an unmeasured synthetic wavelength (e.g. $530\text{ nm}$), the soft sensor models the multi-wavelength detector response of the **IO Rodeo 8-Channel Multichannel Colorimeter**:
+The at-line soft sensor ingests the 8-channel detector array from the **IO Rodeo Multichannel Colorimeter**:
 $$\mathbf{A} = [A_{415}, A_{445}, A_{480}, A_{515}, A_{555}, A_{590}, A_{630}, A_{680}]^T$$
 
-```text
-  Raw 8-Channel Vector A
-            │
-            ▼
-  Turbidity & Baseline Subtraction (A_680)
-            │
-  ┌─────────┴─────────────────────────────────┐
-  ▼                                           ▼
-Carbazole Feature Bracket                Copper-Chelate Band
-[A_515, A_555, A_680]                           [A_590]
-  │                                           │
-  ▼                                           ▼
-Multi-Wavelength Vector Regression       Single-Channel Inversion
-C_GalA = a*A_515 + b*A_555 + c*A_680 + d C_pectin-eq = (A_590 - A_0) / S
-  │                                           │
-  └─────────────────────┬─────────────────────┘
-                        ▼
-             Dynamic Range Check:
-           C_measured in [C_min, C_max]
-                        │
-                        ▼
-             Dilution Factor Scaling:
-               C_sample = C_measured * DF
-```
+### A. Sample-Blank Net Absorbance Vector
+To prevent native passion-fruit carotenoid/flavonoid pigments from biasing the carbazole peak, the model subtracts an unreacted sample-blank:
+$$\mathbf{A}_{\text{net}}(\lambda) = \mathbf{A}_{\text{developed}}(\lambda) - \mathbf{A}_{\text{sample\_blank}}(\lambda) - A_{\text{turbidity}}(680) \left(\frac{680}{\lambda}\right)^{\alpha_{\text{Rayleigh}}}$$
 
-### A. GalA Multi-Wavelength Vector Regression
-The carbazole-galacturonic acid chromophore spans a broad visible absorption envelope with peak absorption near $530\text{ nm}$. The IO Rodeo colorimeter brackets this band with its $515\text{ nm}$ and $555\text{ nm}$ bandpass filters. Optical turbidity and scattering from colloidal particles are anchored at $680\text{ nm}$:
+### B. Multi-Wavelength Vector Regression
+$$C_{\text{GalA,measured}} = w_1 A_{\text{net}}(515) + w_2 A_{\text{net}}(555) + w_3 A_{\text{net}}(680) + d$$
+$$C_{\text{GalA,filtrate}} = C_{\text{GalA,measured}} \times DF$$
 
-$$C_{\text{GalA,measured}} = \mathbf{w}^T \mathbf{A}_{\text{sub}} + d = w_1 A_{515} + w_2 A_{555} + w_3 A_{680} + d$$
+### C. Copper-Chelate Pectin-Equivalent Model
+$$C_{\text{pectin-equiv,measured}} = \frac{A_{\text{net}}(590) - A_{0,\text{Cu}}}{S_{\text{Cu}}}$$
 
-### B. Copper-Chelate Pectin-Equivalent Model
-For the copper-chelate assay, intact pectin coordination absorbs strongly in the yellow-orange band ($590\text{ nm}$):
-$$C_{\text{pectin-equiv,measured}} = \frac{A_{590} - A_{0,\text{Cu}}}{S_{\text{Cu}}}$$
-
-### C. Sample Scaling & Dynamic Range Control
-$$C_{\text{sample}} = C_{\text{measured}} \times DF$$
-
-Every calibration object defines its verified linear domain:
-$$\mathcal{D}_{\text{cal}} = [C_{\text{linear,min}}, C_{\text{linear,max}}]$$
-* **Range Diagnostic Function**:
-  $$\text{Flag}(C_{\text{meas}}) = \begin{cases} \text{VALID}, & C_{\text{linear,min}} \le C_{\text{meas}} \le C_{\text{linear,max}} \\ \text{LOW\_SIGNAL}, & C_{\text{meas}} < C_{\text{linear,min}} \\ \text{SATURATION\_WARNING}, & C_{\text{meas}} > C_{\text{linear,max}} \implies \text{Dilute by } \left\lceil\frac{C_{\text{meas}}}{0.5 \cdot C_{\text{linear,max}}}\right\rceil \end{cases}$$
+### D. Dynamic Linear Range Verification & Dilution Advisory
+Each calibration object registers its verified linear domain $\mathcal{D}_{\text{cal}} = [C_{\text{linear,min}}, C_{\text{linear,max}}]$.
+$$\text{Status}(C_{\text{meas}}) = \begin{cases} \text{VALID}, & C_{\text{linear,min}} \le C_{\text{meas}} \le C_{\text{linear,max}} \\ \text{LOW\_SIGNAL}, & C_{\text{meas}} < C_{\text{linear,min}} \\ \text{RANGE\_EXCEEDED}, & C_{\text{meas}} > C_{\text{linear,max}} \implies \text{Advise: } DF \times \left\lceil\frac{C_{\text{meas}}}{0.5 \cdot C_{\text{linear,max}}}\right\rceil \end{cases}$$
 
 ---
 
-## 6. Optimal Experimental Design (OED) & Structural Identifiability
+## 6. Optimal Experimental Design (OED) Campaigns
 
-### A. Fisher Information Matrix (FIM)
-For an experimental design $\xi = \{(T_j, \text{pH}_j, d_{50,j}, t_{j,k})\}$, the Fisher Information Matrix is:
-$$\mathbf{F}(\theta) = \sum_{j=1}^{N_{\text{runs}}} \sum_{k=1}^{N_{\text{samples}}} \mathbf{S}_{j,k}^T \mathbf{\Sigma}_{\text{obs}}^{-1} \mathbf{S}_{j,k}$$
-where $\mathbf{S}_{j,k} = \frac{\partial \mathbf{y}(t_{j,k}; \theta)}{\partial \theta}$ is the sensitivity matrix evaluated at prior nominal parameters $\theta_0$, and $\mathbf{\Sigma}_{\text{obs}} = \text{diag}(\sigma_{Y}^2, \sigma_{DE}^2, \sigma_{Mw}^2, \sigma_{\text{GalA}}^2)$.
+### A. Track A: Refined 12-Run Calibration Matrix (with Curvature & Replicates)
+To address Arrhenius temperature curvature, low-severity anchoring, and process variance:
+* Adds an **intermediate temperature anchor** ($70^\circ\text{C}$) to decouple $k_{\text{ref}}$ and activation energy $E$.
+* Adds a **mild asymptotic baseline run** ($50^\circ\text{C}, \text{pH } 3.0$).
+* Adds **two true process replicates** (Runs 10a & 10b) to estimate $\mathbf{\Sigma}_{\text{process}}$.
 
-### B. D-Optimality Criterion & Condition Number
-The experimental space is optimized to maximize parameter volume:
-$$\xi^* = \arg\max_\xi \det(\mathbf{F}(\theta))$$
-Design ill-conditioning is evaluated via the eigenvalue spectrum:
-$$\kappa(\mathbf{F}) = \frac{\lambda_{\max}(\mathbf{F})}{\lambda_{\min}(\mathbf{F})}$$
-
-### C. Breaking the $k_{\text{hyd}} \leftrightarrow k_{\text{deg}}$ Structural Anti-Correlation
-In single-endpoint experiments, the intermediate low-MW pectin pool cannot be separated from unrecoverable degradation products, resulting in a severe structural anti-correlation:
-$$\text{Corr}(k_{\text{hyd}}, k_{\text{deg}}) = -0.85, \quad \text{Corr}(E_{\text{hyd}}, E_{\text{deg}}) = -0.85$$
-
-Track A eliminates this ambiguity by enforcing **time-resolved multi-observable sampling**:
-* **Early time ($t = 15\text{ min}$)**: Dominant $k_{\text{ext}}$ and $M_{w,\text{matrix}}$ solubilization.
-* **Intermediate time ($t = 45\text{ min}$)**: Hydrolysis chain scission without extensive degradation.
-* **Late time ($t = 90, 120\text{ min}$)**: Thermal degradation and terminal loss.
-Re-computing the FIM over the time-resolved 10-run protocol compresses the condition number from $\kappa = 52.0$ down to $\kappa = 27.0$.
-
-### D. Decoupling Acoustic Cavitation from Sensible Heating
-In Track B, ultrasound produces simultaneous mechanical cavitation and thermal acoustic dissipation ($Q_{US} = P_{\text{acoustic}}$). To isolate the kinetic cavitation multiplier $\psi_{US}$:
-$$\Delta Y_{\text{UAE}}(T) = Y_{\text{UAE}}(T, P_{\text{elec}}) - Y_{\text{thermal}}(T, P_{\text{elec}} = 0)$$
-By conducting paired runs at matched internal slurry temperatures, the Bayesian likelihood uniquely isolates $\kappa_{US}$ from $E_{\text{ext}}$.
+| Run ID | $T$ (°C) | pH | $d_{50}$ ($\mu$m) | Sample Times (min) | Design Objective |
+| :---: | :---: | :---: | :---: | :---: | :--- |
+| **A-1** | 95 | 1.5 | 600 | 15, 45, 90, 120 | Severe extraction boundary; separates $E_{\text{ext}}$ from $\alpha$ |
+| **A-2** | 50 | 1.5 | 150 | 15, 45, 90, 120 | Low $T$, high acidity, small particle |
+| **A-3** | 95 | 2.5 | 150 | 15, 45, 90, 120 | High $T$, moderate pH, small particle |
+| **A-4** | 50 | 1.5 | 600 | 15, 45, 90, 120 | Low $T$, high acidity, large particle |
+| **A-5** | 70 | 2.0 | 300 | 15, 45, 90, 120 | **Intermediate $T$ anchor**: tests Arrhenius curvature |
+| **A-6** | 50 | 3.0 | 300 | 15, 45, 90, 120 | **Mild asymptote anchor**: near-zero degradation baseline |
+| **A-7** | 95 | 2.5 | 600 | 15, 45, 90, 120 | High $T$, low acidity, large particle |
+| **A-8** | 50 | 2.0 | 150 | 15, 45, 90, 120 | Low $T$, moderate pH anchor |
+| **A-9** | 95 | 3.0 | 150 | 15, 45, 90, 120 | High $T$, mild pH boundary |
+| **A-10a**| 80 | 2.0 | 300 | 15, 45, 90, 120 | Center-point reference state (Replicate 1) |
+| **A-10b**| 80 | 2.0 | 300 | 15, 45, 90, 120 | **True Process Replicate**: estimates run-to-run variance |
+| **A-11** | 95 | 2.0 | 300 | 15, 45, 90, 120 | High-temperature validation anchor |
 
 ---
 
-## 7. Bayesian Parameter Estimation Architecture
+### B. Track B: Dedicated UAE OED Calibration Matrix (10 Runs)
+To identify acoustic coupling ($\eta_{\text{coupling}}$), cavitation scaling ($\kappa_{US}, \beta_{US}$), and thermal enhancement ($\Delta Y_{\text{UAE}}$):
+* Includes **two fresh-rind thermal controls** ($P_{\text{elec}} = 0\text{ W}$) to cleanly decouple thermal extraction from ultrasound.
+* Features **time-resolved in-situ sampling** ($t \in \{10, 20, 40, 60\}\text{ min}$) for each run.
+* Includes **two true process replicates** (Runs B-4a & B-4b).
 
-### A. Parameter Ontology & Prior Distributions
+| Run ID | $P_{\text{elec}}$ (W) | $T_{\text{bath}}$ (°C) | Comminution $d_{50}$ | Sample Times (min) | Design Objective |
+| :---: | :---: | :---: | :---: | :---: | :--- |
+| **B-1** | **0 (OFF)** | 55 | Fine ($600\,\mu\text{m}$) | 10, 20, 40, 60 | **Thermal baseline on fresh rind** (pure thermal $Y$) |
+| **B-2** | **0 (OFF)** | 70 | Fine ($600\,\mu\text{m}$) | 10, 20, 40, 60 | **High-T thermal baseline** (separates matrix from US) |
+| **B-3** | 100 | 40 | Fine ($600\,\mu\text{m}$) | 10, 20, 40, 60 | Low power, mild temperature cavitation |
+| **B-4a**| 200 | 55 | Fine ($600\,\mu\text{m}$) | 10, 20, 40, 60 | Reference UAE condition (Replicate 1) |
+| **B-4b**| 200 | 55 | Fine ($600\,\mu\text{m}$) | 10, 20, 40, 60 | **True Process Replicate**: estimates US bath variance |
+| **B-5** | 300 | 40 | Fine ($600\,\mu\text{m}$) | 10, 20, 40, 60 | Maximum acoustic power at low bulk temperature |
+| **B-6** | 300 | 70 | Fine ($600\,\mu\text{m}$) | 10, 20, 40, 60 | Severe combined acoustic-thermal boundary |
+| **B-7** | 200 | 55 | Coarse ($1500\,\mu\text{m}$) | 10, 20, 40, 60 | Particle size sensitivity in acoustic field |
+| **B-8** | 100 | 70 | Coarse ($1500\,\mu\text{m}$) | 10, 20, 40, 60 | Low power, high $T$, coarse tissue interaction |
+| **B-9** | 200 | 40 | Coarse ($1500\,\mu\text{m}$) | 10, 20, 40, 60 | Low $T$, intermediate power, large tissue |
 
-| Parameter | Symbol | Units | Prior Distribution $p(\theta)$ | Physical Interpretation |
+---
+
+## 7. Two-Tier Bayesian Inference Architecture
+
+### A. Observation Noise Model
+Rather than assuming target sensor noise is the sole source of error, the likelihood model combines analytical assay error with process execution variance:
+$$\mathbf{\Sigma}_{\text{total}} = \mathbf{\Sigma}_{\text{obs}} + \mathbf{\Sigma}_{\text{process}}$$
+
+* **$\mathbf{\Sigma}_{\text{obs}}$ (Analytical Assay Precision)**:
+  - $\sigma_{\text{yield,obs}} = 0.01$ (1% absolute)
+  - $\sigma_{DE,\text{obs}} = 0.02$ (2% absolute)
+  - $\sigma_{Mw,\text{obs}} = 15,000\text{ Da}$
+  - $\sigma_{\text{GalA,obs}} = 0.025$ (2.5% absolute)
+* **$\mathbf{\Sigma}_{\text{process}}$ (Run-to-Run Process Variance)**:
+  Directly estimated from the paired replicates (Runs A-10a/b and B-4a/b):
+  - $\sigma_{\text{yield,process}} \approx 0.015$ (biomass packing & solid-liquid separation losses)
+  - $\sigma_{\text{acoustic,process}} \approx 0.05 \cdot P_{\text{acoustic}}$ (transducer coupling variability)
+
+### B. Bayesian Prior & Parameter Table
+
+| Parameter | Symbol | Units | Prior Distribution $p(\theta)$ | Inference Status |
 | :--- | :---: | :---: | :--- | :--- |
-| **Reference Extraction Rate** | $k_{\text{ext,ref}}$ | $\text{min}^{-1}$ | $\text{LogNormal}(\ln(0.035), 0.3)$ | Solubilization at 80 °C, pH 2.0 |
-| **Extraction Activation Energy** | $E_{\text{ext}}$ | $\text{J/mol}$ | $\text{Normal}(60000, 10000)$ | Temperature sensitivity of extraction |
-| **Reference Hydrolysis Rate** | $k_{\text{hyd,ref}}$ | $\text{min}^{-1}$ | $\text{LogNormal}(\ln(0.015), 0.3)$ | Chain scission at 80 °C, pH 2.0 |
-| **Hydrolysis Activation Energy** | $E_{\text{hyd}}$ | $\text{J/mol}$ | $\text{Normal}(85000, 12000)$ | Temperature sensitivity of hydrolysis |
-| **Reference Degradation Rate** | $k_{\text{deg,ref}}$ | $\text{min}^{-1}$ | $\text{LogNormal}(\ln(0.005), 0.4)$ | Monomer degradation at 80 °C, pH 2.0 |
-| **Degradation Activation Energy**| $E_{\text{deg}}$ | $\text{J/mol}$ | $\text{Normal}(100000, 15000)$ | Temperature sensitivity of degradation |
-| **Reference De-esterification Rate**| $k_{\text{de,ref}}$ | $\text{min}^{-1}$ | $\text{LogNormal}(\ln(0.012), 0.25)$ | Saponification rate at 80 °C, pH 2.0 |
-| **De-esterification Activation Energy**| $E_{\text{de}}$ | $\text{J/mol}$ | $\text{Normal}(50000, 8000)$ | Temperature sensitivity of de-esterification |
-| **Particle Scaling Exponent** | $\alpha$ | $-$ | $\text{Normal}(1.0, 0.2)$ | Boundary layer accessibility scaling |
-| **Acoustic Coupling Efficiency** | $\eta_{\text{coupling}}$ | $-$ | $\text{Beta}(4.0, 12.0)$ | Calorimetric transfer efficiency ($15\text{--}35\%$) |
-| **Cavitation Multiplier** | $\kappa_{US}$ | $\text{m}^3/\text{W}$ | $\text{LogNormal}(\ln(0.05), 0.5)$ | Kinetic acceleration per acoustic watt |
+| **Reference Extraction Rate** | $k_{\text{ext,ref}}$ | $\text{min}^{-1}$ | $\text{LogNormal}(\ln(0.035), 0.3)$ | Calibrated |
+| **Extraction Activation Energy** | $E_{\text{ext}}$ | $\text{J/mol}$ | $\text{Normal}(60000, 10000)$ | Calibrated |
+| **Reference Hydrolysis Rate** | $k_{\text{hyd,ref}}$ | $\text{min}^{-1}$ | $\text{LogNormal}(\ln(0.015), 0.3)$ | Calibrated |
+| **Hydrolysis Activation Energy** | $E_{\text{hyd}}$ | $\text{J/mol}$ | $\text{Normal}(85000, 12000)$ | Calibrated |
+| **Reference Degradation Rate** | $k_{\text{deg,ref}}$ | $\text{min}^{-1}$ | $\text{LogNormal}(\ln(0.005), 0.4)$ | Calibrated |
+| **Degradation Activation Energy**| $E_{\text{deg}}$ | $\text{J/mol}$ | $\text{Normal}(100000, 15000)$ | Calibrated |
+| **Reference De-esterification Rate**| $k_{\text{de,ref}}$ | $\text{min}^{-1}$ | $\text{LogNormal}(\ln(0.012), 0.25)$ | Calibrated |
+| **De-esterification Activation Energy**| $E_{\text{de}}$ | $\text{J/mol}$ | $\text{Normal}(50000, 8000)$ | Calibrated |
+| **Particle Scaling Exponent** | $\alpha$ | $-$ | $\text{Normal}(1.0, 0.2)$ | Calibrated |
+| **Fresh Matrix Accessibility** | $\Omega_{\text{fresh}}$ | $-$ | $\text{Normal}(1.35, 0.15)$ | Calibrated (Track B) |
+| **Acoustic Coupling Efficiency** | $\eta_{\text{coupling}}$ | $-$ | $\text{Beta}(4.0, 12.0)$ | Calibrated (Track B) |
+| **Sensible Thermal Fraction** | $\xi_{\text{thermal}}$ | $-$ | $\text{Normal}(0.88, 0.04)$ | Fixed / Calorimetric |
+| **Cavitation Multiplier** | $\kappa_{US}$ | $\text{m}^3/\text{W}$ | $\text{LogNormal}(\ln(0.05), 0.5)$ | Calibrated (Track B) |
+| **Cavitation Power Exponent** | $\beta_{US}$ | $-$ | $\text{Normal}(0.75, 0.15)$ | Calibrated (Track B) |
+| **Frequency Exponent** | $\gamma_{US}$ | $-$ | $1.0$ | **Fixed Literature** |
 
-### B. Bayesian Posterior Likelihood Formulation
-Given physical experimental observations $\mathcal{D} = \{(\mathbf{y}_{j,k}^{\text{obs}}, \mathbf{\Sigma}_{j,k})\}$, the posterior probability density is:
-$$p(\theta \mid \mathcal{D}) \propto p(\theta) \prod_{j=1}^{N_{\text{runs}}} \prod_{k=1}^{N_{\text{samples}}} \mathcal{N}\left(\mathbf{y}_{j,k}^{\text{obs}} \;\Big|\; \mathbf{y}_{\text{model}}(t_{j,k}; \theta), \mathbf{\Sigma}_{j,k}\right)$$
-
-Sampling is executed using Hamiltonian Monte Carlo (HMC) with the No-U-Turn Sampler (NUTS), generating 4 parallel chains of 2,000 warm-up and 2,000 posterior iterations.
-
-### C. Posterior Predictive Consistency (PPC)
-Model validity is confirmed when independently held-out validation experiments (Runs 11–13) satisfy:
-$$\mathbf{y}_{\text{validation}}^{\text{obs}} \in \text{BCI}_{95\%}\left(p(\mathbf{y}_{\text{pred}} \mid \mathcal{D})\right)$$
-where $\text{BCI}_{95\%}$ is the $95\%$ Bayesian Credible Interval of the posterior predictive distribution.
+### C. Posterior Sampling via NUTS
+The posterior distribution is explored using Hamiltonian Monte Carlo (HMC) with the No-U-Turn Sampler (NUTS) across 4 chains $\times 2,000$ draws:
+$$p(\theta \mid \mathcal{D}) \propto p(\theta) \prod_{j=1}^{N_{\text{runs}}} \prod_{k=1}^{N_{\text{samples}}} \mathcal{N}\left(\mathbf{y}_{j,k}^{\text{obs}} \;\Big|\; \mathbf{y}_{\text{model}}(t_{j,k}; \theta), \mathbf{\Sigma}_{\text{total}}\right)$$
+Convergence criteria: $\hat{R} < 1.05$ and effective sample size $\text{ESS} > 400$ across all parameters.

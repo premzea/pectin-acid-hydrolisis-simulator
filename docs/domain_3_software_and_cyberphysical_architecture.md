@@ -1,6 +1,6 @@
 # Domain 3: Software Engineering & Cyber-Physical System Architecture
 
-**Document Version**: 2.0  
+**Document Version**: 2.1 (Incorporating Systems & Chemometrics Peer Review)  
 **Parent Document**: [`MASTER_DUAL_TRACK_SPECIFICATION.md`](file:///Z:/home/eduzea/projects/pectin-extraction/pectin-acid-hydrolisis-simulator/docs/MASTER_DUAL_TRACK_SPECIFICATION.md)  
 **Target Audience**: Software Engineers, Full-Stack Developers, Embedded/IoT Engineers, UI/UX Designers
 
@@ -8,15 +8,20 @@
 
 ## 1. Executive Scope & Cyber-Physical Overview
 
-The Bioreactor Studio ecosystem provides the software, embedded firmware, communication middleware, and user interface infrastructure connecting wet-lab hardware (Track A stirred reactor and Track B UAE bath + IO Rodeo colorimeter) with the compiled digital twin simulation engines.
+The Bioreactor Studio ecosystem provides the software, embedded firmware, communication middleware, and user interface infrastructure connecting wet-lab hardware (Track A stirred reactor with reflux condenser and Track B UAE bath + IO Rodeo colorimeter) with the compiled digital twin simulation engines.
+
+Incorporating rigorous peer-review critiques:
+1. **Calibration Provenance Symmetry**: Establishes unified first-class provenance models for **all** secondary proxies across both tracks (Track B IO Rodeo colorimeter, Track A FTIR PLS models, and capillary viscometer Mark-Houwink models).
+2. **Techno-Economic Symmetry**: Integrates extract streams from both Track A and Track B into all four industrial downstream separation flowsheets.
+3. **Dynamic Vessel Volume Scaling**: Real-time tracking of cumulative aliquot withdrawals with dynamic reaction volume updates.
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────────────────┐
 │                             REACT 19 FRONTEND (SPA)                              │
-│  - Run Configuration (Track A / Track B Switcher)                                │
-│  - Real-Time Telemetry Trajectories (Recharts)                                   │
-│  - Multi-Channel Colorimeter Soft-Sensor Widget (8-Channel Profile & Gauge)      │
-│  - Campaign Active Learning & Techno-Economic Analysis Dashboard                 │
+│  - Run Configuration (Track A Reflux/Dosing vs. Track B UAE/Colorimeter)         │
+│  - Real-Time Multi-Trace Telemetry (Slurry T, Bath T, Reflux T, pH, Power)       │
+│  - Multi-Channel Colorimeter Soft-Sensor Widget (Sample-Blank Vector & Gauge)    │
+│  - Symmetric Techno-Economic Downstream Flowsheet Evaluator (Tracks A & B)       │
 └────────────────────────────────────────┬─────────────────────────────────────────┘
                                          │ WebSocket / REST HTTP
                                          ▼
@@ -24,15 +29,15 @@ The Bioreactor Studio ecosystem provides the software, embedded firmware, commun
 │                            FASTAPI BACKEND (Python 3.12)                         │
 │  - Connection Manager (WebSocket Clients <-> Edge Relays)                        │
 │  - FMU Runner (FMI 2.0 Co-Simulation C-Binary via FMPy)                         │
-│  - Soft-Sensor Chemometric Engine (Vector Regression & Provenance)               │
+│  - Unified Chemometric Engine (Colorimeter Vectors, FTIR PLS, Viscometer)        │
 │  - SQLite Multi-Tier Database (pectin_extractor.db / pectin_extractor_sim.db)    │
 └──────────────────┬─────────────────────────────────────────────┬─────────────────┘
                    │ WebSocket                                   │ Serial / WiFi
                    ▼                                             ▼
 ┌──────────────────────────────────────┐     ┌─────────────────────────────────────┐
 │    HIL SIMULATOR (mock_arduino.py)   │     │    ARDUINO UNO Q BRIDGE RELAY       │
-│  - Bang-Bang Thermal Reactor Model   │     │  - Physical RTD & pH Sensor Polling │
-│  - FMU Chemistry Stepper (RK4)       │     │  - Ultrasonic Bath State Relay      │
+│  - Dynamic Reactor Volume Balance    │     │  - Physical RTD & pH Sensor Polling │
+│  - FMU Chemistry Stepper (RK4)       │     │  - Reflux Coolant & Dosing Relays   │
 │  - Simulated 8-Channel Telemetry     │     │  - IO Rodeo Serial Interfacing      │
 └──────────────────────────────────────┘     └─────────────────────────────────────┘
 ```
@@ -41,7 +46,7 @@ The Bioreactor Studio ecosystem provides the software, embedded firmware, commun
 
 ## 2. FMU 2.0 Co-Simulation Digital Twin Engine
 
-To eliminate high-latency runtime language dependencies (e.g. Julia/Python JIT overheads), the high-fidelity mechanistic model is compiled into a standalone **FMI 2.0 Co-Simulation C-Shared Library** archive:
+To eliminate high-latency runtime language dependencies, the high-fidelity mechanistic model is compiled into a standalone **FMI 2.0 Co-Simulation C-Shared Library** archive:
 📁 `models/PectinHydrolysisTwin.fmu`
 
 ### A. Python FMI Interface (`fmu_runner.py`)
@@ -52,14 +57,13 @@ Execution is handled via `fmpy`:
    Enables real-time Hardware-in-the-Loop (HIL) stepping:
    * Instantiates the slave binary (`fmu.instantiate()`).
    * Pushes active physical setpoints (`setReal(VR_T_REACTOR, temp_c)`).
+   * Dynamically tracks volume withdrawals (`setReal(VR_SLURRY_VOLUME, remaining_v)`).
    * Steps forward synchronously by $\Delta t$ seconds (`fmu.doStep(current_time, dt)`).
    * Reads back state vector $[P_{\text{matrix}}, P_{\text{sol}}, P_{\text{lowMW}}, P_{\text{loss}}, DE_{\text{sol}}, M_{w,\text{sol}}]$.
 
 ---
 
-## 3. Database Schema & First-Class Provenance Architecture
-
-Persistence uses SQLite with WAL (Write-Ahead Logging) enabled. Real runs log to `pectin_extractor.db`; synthetic HIL simulations log to `pectin_extractor_sim.db`.
+## 3. Database Schema & Unified Provenance Architecture
 
 ```text
 ┌──────────────────────┐         ┌───────────────────────┐
@@ -68,52 +72,52 @@ Persistence uses SQLite with WAL (Write-Ahead Logging) enabled. Real runs log to
 │ run_id (PK)          │         │ id (PK)               │
 │ track_type           │         │ run_id (FK)           │
 │ device_id            │         │ timestamp_utc         │
-│ status               │         │ reactor_T_C           │
-│ config_json          │         │ pH                    │
+│ status               │         │ reactor_T_C, bath_T_C │
+│ config_json          │         │ reflux_T_C, pH        │
 │ start_time           │         │ p_matrix, p_sol, ...  │
 └──────────┬───────────┘         └───────────────────────┘
            │1
+           ├───────────────────────────────┬───────────────────────────────┐
+           │1                              │1                              │1
+           ▼                               ▼                               ▼
+┌────────────────────────────┐ ┌───────────────────────────┐ ┌───────────────────────────┐
+│          uae_runs          │ │     ftir_calibrations     │ │  viscometer_calibrations  │
+├────────────────────────────┤ ├───────────────────────────┤ ├───────────────────────────┤
+│ run_id (PK, FK)            │ │ calibration_id (PK)       │ │ calibration_id (PK)       │
+│ calibration_id_gala (FK)   │ │ analyte ("DE" | "GalA")   │ │ analyte ("Mw")            │
+│ calibration_id_pectin (FK) │ │ model_type ("PLS" | "PCR")│ │ model_type ("Mark_Houwink")│
+│ fresh_rind_mass_g          │ │ n_components              │ │ K_constant, a_exponent    │
+│ water_mass_g               │ │ wavenumber_range_json     │ │ solvent, temperature_c    │
+│ fresh_moisture_pct         │ │ coefficients_json         │ │ r_squared, rmsep          │
+│ particle_size_um, init_ph  │ │ r_squared, rmsep          │ │ created_at                │
+│ us_nominal_power_w         │ │ created_at                │ └───────────────────────────┘
+│ acoustic_coupling_eff      │ └───────────────────────────┘
+│ sample_blank_spectra_json  │
+│ net_spectra_json           │
+│ gala_conc_mg_l             │
+│ pectin_equiv_conc_mg_l     │
+│ gala_composition_indicator │
+└──────────┬─────────────────┘
+           │*
            │1
-┌──────────┴────────────────────────────────────────────────┐
-│                           uae_runs                        │
-├───────────────────────────────────────────────────────────┤
-│ run_id (PK, FK -> runs)                                   │
-│ calibration_id_gala (FK -> colorimeter_calibrations)      │
-│ calibration_id_pectin (FK -> colorimeter_calibrations)    │
-│ fresh_rind_mass_g, water_mass_g, fresh_moisture_pct       │
-│ particle_size_um, initial_ph, extraction_temp_c           │
-│ bath_temp_c, us_frequency_khz, us_nominal_power_w         │
-│ acoustic_coupling_eff, extraction_time_min                │
-│ filtrate_total_mass_g, analytical_aliquot_mass_g          │
-│ precipitation_stream_mass_g, dilution_factor              │
-│ raw_spectra_json (8-channel absorbances)                  │
-│ gala_conc_mg_l, pectin_equiv_conc_mg_l                    │
-│ precipitated_dry_mass_g, gravimetric_yield_pct            │
-│ gala_composition_indicator                                │
-└──────────────────────────┬────────────────────────────────┘
-                           │*
-                           │1
-┌──────────────────────────┴────────────────────────────────┐
-│                  colorimeter_calibrations                 │
-├───────────────────────────────────────────────────────────┤
-│ calibration_id (PK)                                       │
-│ analyte ("GalA" | "pectin_equivalent")                    │
-│ assay_chemistry ("carbazole_sulfuric" | "copper_chelate") │
-│ standard_identity ("D-GalA monohydrate 98%")              │
-│ standard_concentrations_json                              │
-│ replicate_absorbances_json                                │
-│ wavelengths_used_json ([515, 555, 680])                   │
-│ model_type ("multichannel_linear_regression")             │
-│ coefficients_json (weights [a, b, c], intercept d)        │
-│ r_squared, rmsep                                          │
-│ linear_range_min_mg_l, linear_range_max_mg_l              │
-│ reagent_batch_id, instrument_id ("IO_Rodeo_01")           │
-│ temperature_c, created_at                                 │
-└───────────────────────────────────────────────────────────┘
+           ▼
+┌────────────────────────────┐
+│  colorimeter_calibrations  │
+├────────────────────────────┤
+│ calibration_id (PK)        │
+│ analyte, assay_chemistry   │
+│ standard_identity          │
+│ standard_concentrations    │
+│ sample_blank_subtraction   │
+│ coefficients_json          │
+│ r_squared, rmsep           │
+│ linear_range_min/max_mg_l  │
+│ reagent_batch_id           │
+│ instrument_id, created_at  │
+└────────────────────────────┘
 ```
 
-### Table 1: `colorimeter_calibrations` (Provenance Object)
-Guarantees that every analytical result can be traced back to its specific standard series, reagent batch, and instrument channel calibration:
+### Table 1: `colorimeter_calibrations` (Track B Provenance)
 ```sql
 CREATE TABLE IF NOT EXISTS colorimeter_calibrations (
     calibration_id TEXT PRIMARY KEY,
@@ -123,12 +127,14 @@ CREATE TABLE IF NOT EXISTS colorimeter_calibrations (
     standard_concentrations_json TEXT NOT NULL,
     replicate_absorbances_json TEXT NOT NULL,
     wavelengths_used_json TEXT NOT NULL,
+    sample_blank_subtraction INTEGER DEFAULT 1,
     model_type TEXT NOT NULL,
     coefficients_json TEXT NOT NULL,
     r_squared REAL NOT NULL,
     rmsep REAL,
     linear_range_min_mg_l REAL NOT NULL,
     linear_range_max_mg_l REAL NOT NULL,
+    matrix_spike_recovery_pct REAL,
     reagent_batch_id TEXT,
     instrument_id TEXT NOT NULL,
     temperature_c REAL,
@@ -136,8 +142,39 @@ CREATE TABLE IF NOT EXISTS colorimeter_calibrations (
 );
 ```
 
-### Table 2: `uae_runs` (Arduino Q Experiment Logger)
-Records the full physical process, mass balance, spectrophotometry, and recovery results for Track B:
+### Table 2: `ftir_calibrations` (Track A Secondary Proxy Provenance)
+```sql
+CREATE TABLE IF NOT EXISTS ftir_calibrations (
+    calibration_id TEXT PRIMARY KEY,
+    analyte TEXT NOT NULL,
+    model_type TEXT NOT NULL, -- 'PLS' or 'PCR'
+    n_components INTEGER NOT NULL,
+    wavenumber_range_json TEXT NOT NULL,
+    coefficients_json TEXT NOT NULL,
+    r_squared REAL NOT NULL,
+    rmsep REAL NOT NULL,
+    spectrometer_model TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+```
+
+### Table 3: `viscometer_calibrations` (Track A Secondary Proxy Provenance)
+```sql
+CREATE TABLE IF NOT EXISTS viscometer_calibrations (
+    calibration_id TEXT PRIMARY KEY,
+    analyte TEXT NOT NULL,
+    model_type TEXT NOT NULL, -- 'Mark_Houwink'
+    k_constant REAL NOT NULL,
+    a_exponent REAL NOT NULL,
+    solvent TEXT NOT NULL,
+    temperature_c REAL NOT NULL,
+    rmsep REAL,
+    r_squared REAL,
+    created_at TEXT NOT NULL
+);
+```
+
+### Table 4: `uae_runs` (Arduino Q Experiment Logger)
 ```sql
 CREATE TABLE IF NOT EXISTS uae_runs (
     run_id TEXT PRIMARY KEY,
@@ -159,6 +196,8 @@ CREATE TABLE IF NOT EXISTS uae_runs (
     precipitation_stream_mass_g REAL NOT NULL,
     dilution_factor REAL NOT NULL,
     raw_spectra_json TEXT NOT NULL,
+    sample_blank_spectra_json TEXT NOT NULL,
+    net_spectra_json TEXT NOT NULL,
     gala_conc_mg_l REAL NOT NULL,
     pectin_equiv_conc_mg_l REAL NOT NULL,
     precipitated_dry_mass_g REAL NOT NULL,
@@ -173,13 +212,9 @@ CREATE TABLE IF NOT EXISTS uae_runs (
 
 ---
 
-## 4. Real-Time Communication Protocols & Bridge Relay
+## 4. Real-Time Middleware & Edge Integration
 
-### A. WebSocket Connection Architecture (`main.py`)
-* `/ws/arduino/{device_id}`: Dedicated full-duplex tunnel for edge controllers (physical Arduino Uno Q or mock simulator).
-* `/ws/frontend`: Broadcast channel pushing 1 Hz real-time telemetry frames to all connected React clients.
-
-### B. Live Telemetry Frame Schema (JSON)
+### A. Live Telemetry Frame Schema (JSON)
 ```json
 {
   "kind": "telemetry",
@@ -190,9 +225,11 @@ CREATE TABLE IF NOT EXISTS uae_runs (
   "track_type": "uae_colorimetric",
   "reactor_T_C": 58.4,
   "bath_T_C": 60.1,
+  "reflux_T_C": 16.2,
   "pH": 2.15,
   "ultrasound_active": true,
   "ultrasound_power_w": 180.0,
+  "active_reactor_volume_ml": 1164.0,
   "true": {
     "p_matrix": 0.124,
     "p_sol": 0.158,
@@ -202,108 +239,53 @@ CREATE TABLE IF NOT EXISTS uae_runs (
 }
 ```
 
-### C. Arduino Uno Q Hardware Bridge Relay (`uno_q_bridge_relay.py`)
-Connects the physical Arduino Uno Q development board to the backend over USB Serial or WiFi:
-* Polls ADC pins for PT100 amplifier (MAX31865) and industrial pH electrode (E-201-C).
-* Commands digital solid-state relays (SSRs) for the heating elements and ultrasonic bath power.
-* Interfaces with the IO Rodeo Multichannel Colorimeter over USB UART to trigger at-line sample acquisition.
-
 ---
 
-## 5. REST API Specifications (`main.py`)
+## 5. REST API Architecture (`main.py`)
 
 ### A. Colorimeter Calibration Management
 * **`POST /api/colorimeter/calibrations`**:
-  Fit multi-channel regression from calibration standards and register provenance object:
-  ```json
-  {
-    "analyte": "GalA",
-    "assay_chemistry": "carbazole_sulfuric",
-    "standard_identity": "D-(+)-Galacturonic acid monohydrate >=97%",
-    "standards": [
-      {"conc_mg_l": 0.0, "absorbances": {"515": 0.041, "555": 0.038, "680": 0.012}},
-      {"conc_mg_l": 50.0, "absorbances": {"515": 0.215, "555": 0.198, "680": 0.014}},
-      {"conc_mg_l": 100.0, "absorbances": {"515": 0.421, "555": 0.385, "680": 0.015}},
-      {"conc_mg_l": 200.0, "absorbances": {"515": 0.812, "555": 0.745, "680": 0.016}},
-      {"conc_mg_l": 400.0, "absorbances": {"515": 1.580, "555": 1.450, "680": 0.018}}
-    ],
-    "linear_range": [10.0, 350.0],
-    "instrument_id": "IO_Rodeo_01",
-    "reagent_batch_id": "CARB-2026-09-A"
-  }
-  ```
-  *Response*: `{"status": "success", "calibration_id": "CAL-GALA-2026-09-01", "r_squared": 0.9987, "coefficients": {"515": 0.00392, "555": -0.00045, "680": -0.0021, "intercept": -0.082}}`.
-
-* **`GET /api/colorimeter/calibrations/active`**:
-  Retrieves active calibration objects for GalA and Pectin-Equivalent assays.
+  Fit multi-channel regression from calibration standards with sample-blank subtraction:
+  * Ingests standards and sample-blank spectra.
+  * Fits $[A_{\text{net}}(515), A_{\text{net}}(555), A_{\text{net}}(680)] \to C_{\text{GalA}}$.
+  * Computes $R^2$, RMSEP, and checks matrix spike recovery.
+  * Persists object to `colorimeter_calibrations`.
 
 ### B. At-Line Measurement & Soft Sensing
 * **`POST /api/colorimeter/measure`**:
-  ```json
-  {
-    "raw_spectra": {
-      "415": 0.124, "445": 0.156, "480": 0.210,
-      "515": 0.642, "555": 0.589, "590": 0.320,
-      "630": 0.045, "680": 0.022
-    },
-    "dilution_factor": 50.0,
-    "calibration_id_gala": "CAL-GALA-2026-09-01",
-    "calibration_id_pectin": "CAL-PECTIN-2026-09-01"
-  }
-  ```
-  *Response*:
-  ```json
-  {
-    "gala_measured_mg_l": 158.4,
-    "gala_sample_mg_l": 7920.0,
-    "pectin_equiv_measured_mg_l": 182.1,
-    "pectin_equiv_sample_mg_l": 9105.0,
-    "range_status": "VALID",
-    "recommended_df": 50.0,
-    "turbidity_index_680": 0.022
-  }
-  ```
+  * Ingests developed tube and sample-blank tube spectra.
+  * Subtracts baseline and computes net absorbance vector $\mathbf{A}_{\text{net}}$.
+  * Evaluates linear range status and advises dilution factor adjustments ($DF \times N$).
 
-### C. UAE Process Simulation & Logging
-* **`POST /api/uae/simulate`**:
-  Forward simulation of Track B given fresh rind mass, water mass, power, frequency, and time.
-* **`POST /api/uae/runs/record`**:
-  Commits a completed Arduino Q experiment record into `uae_runs`.
+### C. Symmetric Techno-Economic Downstream Evaluation
+* **`POST /api/economics/evaluate`**:
+  Accepts extract liquor from **either Track A or Track B** and evaluates downstream separation:
+  ```json
+  {
+    "track_source": "Track_B_UAE",
+    "liters_extract": 20000.0,
+    "kg_pectin_extracted": 120.0,
+    "gala_composition_indicator": 0.78,
+    "flowsheet": "hybrid"
+  }
+  ```
+  *Evaluates all 4 standard trains*:
+  1. `hybrid`: MF + UF/DF 10× volume reduction + 1:1 ethanol precipitation + drying.
+  2. `direct_drying`: MF + Diafiltration + direct spray drying (zero solvent).
+  3. `conventional`: MF + 80% evaporation + 2:1 ethanol precipitation + drying.
+  4. `liquid_concentrate`: MF + UF to 6–8% Brix + formulation.
 
 ---
 
-## 6. Bioreactor Studio UI Architecture (`src/frontend`)
+## 6. Bioreactor Studio Frontend SPA Architecture (`src/frontend`)
 
-The Single Page Application is built using **React 19**, **Vite**, **Tailwind CSS**, and **Recharts**:
-
-```text
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                                       App.jsx                                          │
-│ ┌────────────────────────────────────────────────────────────────────────────────────┐ │
-│ │                                    Header.jsx                                      │ │
-│ └────────────────────────────────────────────────────────────────────────────────────┘ │
-│                                          │                                             │
-│       ┌─────────────────┬────────────────┴────────────────┬─────────────────┐          │
-│       ▼                 ▼                                 ▼                 ▼          │
-│ RunConfigScreen   ActiveRunScreen               EconomicsScreen   SimulationCampaign   │
-│ (Track A/B Form)  - Live Temperature & pH       (Techno-Economic  (Active Learning     │
-│                   - Trajectory Chart             Downstream TEA)   Bayesian Tuning)    │
-│                   - ColorimeterSoftSensorWidget                                        │
-│                     * 8-Channel Bar Chart                                              │
-│                     * Concentration Readouts                                           │
-│                     * GalA Purity Gauge                                                │
-└────────────────────────────────────────────────────────────────────────────────────────┘
-```
-
-### Component Breakdown
 1. **`RunConfigScreen.jsx`**:
-   Includes a tabbed workflow selector:
-   * *Track A*: Jacket temperature setpoint, stirring RPM, standardized particle size ($150, 300, 600\,\mu\text{m}$), and quench interval schedule.
-   * *Track B*: Fresh peel mass, water mass, food-processor comminution size, 40-kHz nominal power slider ($50\text{--}300\text{ W}$), bath temperature, and analytical dilution factor.
+   * *Track A Panel*: Target jacket $T$, mechanical stirring RPM, ASTM sieve fraction ($150, 300, 600\,\mu\text{m}$), reflux condenser active status toggle, and aliquot volume constraint validator ($< 5\%$).
+   * *Track B Panel*: Fresh peel mass, water mass, food-processor comminution size, 40-kHz nominal power slider ($0\text{--}300\text{ W}$), and paired thermal control flag ($P_{\text{elec}} = 0$).
 2. **`ColorimeterSoftSensorWidget.jsx`**:
-   * Visualizes 8 discrete spectral bars with colored wavelength bands.
-   * Displays primary GalA concentration ($C_{\text{GalA}}$) with calibration tag.
-   * Displays secondary Pectin-equivalent concentration ($C_{\text{pectin-equiv}}$).
-   * Renders the **GalA Composition / Purity Indicator** radial gauge:
-     $$\text{Purity Ratio} = \frac{\text{GalA Mass (Chemical)}}{\text{Dry Precipitate Mass (Gravimetric)}}$$
-     Color-coded: Green ($> 75\%$, high purity), Yellow ($55\text{--}75\%$, commercial grade), Red ($< 55\%$, high co-extractives).
+   * Renders dual spectral traces: Developed Tube vs. Sample-Blank Tube.
+   * Visualizes Net Absorbance Vector $\mathbf{A}_{\text{net}}$ across all 8 IO Rodeo channels.
+   * Displays GalA Concentration ($C_{\text{GalA}}$), Pectin-Equivalent Concentration ($C_{\text{pectin-equiv}}$), and Matrix Spike Recovery indicator.
+   * Radial **GalA-Based Composition Indicator** gauge with threshold badges.
+3. **`EconomicsScreen.jsx`**:
+   * Side-by-side comparison of CAPEX, OPEX, and net margins for Track A vs. Track B across all four downstream recovery routes.
