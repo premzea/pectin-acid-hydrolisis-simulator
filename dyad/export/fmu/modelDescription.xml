@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fmiModelDescription
+  fmiVersion="2.0"
+  modelName="PectinHydrolysisTwin"
+  guid="{7e14d3ba-a476-4d05-9f5b-59d870c91834}"
+  description="Pectin Acid Hydrolysis 4-Pool Mechanistic Digital Twin"
+  generationTool="Dyad / ModelingToolkit"
+  numberOfEventIndicators="0">
+
+  <CoSimulation
+    modelIdentifier="PectinHydrolysisTwin"
+    canHandleVariableCommunicationStepSize="true"
+    canInterpolateInputs="true"
+    maxOutputDerivativeOrder="0"
+    canRunAsynchronuously="false"
+    canBeInstantiatedOnlyOncePerProcess="false"
+    canNotUseMemoryManagementFunctions="true"
+    canGetAndSetFMUstate="false"
+    canSerializeFMUstate="false"
+    providesDirectionalDerivative="false"/>
+
+  <DefaultExperiment startTime="0.0" stopTime="7200.0" stepSize="1.0"/>
+
+  <ModelVariables>
+    <!-- Parameters (0 to 15) -->
+    <ScalarVariable name="T_reactor" valueReference="0" causality="parameter" variability="fixed" description="Reactor Temperature [Celsius]">
+      <Real start="80.0"/>
+    </ScalarVariable>
+    <ScalarVariable name="pH_reactor" valueReference="1" causality="parameter" variability="fixed" description="Reactor pH [-]">
+      <Real start="2.0"/>
+    </ScalarVariable>
+    <ScalarVariable name="C_citric" valueReference="2" causality="parameter" variability="fixed" description="Citric Acid Concentration [mol/L]">
+      <Real start="0.05"/>
+    </ScalarVariable>
+    <ScalarVariable name="dry_matter_mass" valueReference="3" causality="parameter" variability="fixed" description="Initial dry matter mass [kg]">
+      <Real start="1.0"/>
+    </ScalarVariable>
+    <ScalarVariable name="pectin_mass_0" valueReference="4" causality="parameter" variability="fixed" description="Initial pectin mass [kg]">
+      <Real start="0.2333"/>
+    </ScalarVariable>
+    <ScalarVariable name="k_ref_ext" valueReference="5" causality="parameter" variability="fixed" description="k_ext reference rate [1/min]">
+      <Real start="0.035"/>
+    </ScalarVariable>
+    <ScalarVariable name="Ea_ext" valueReference="6" causality="parameter" variability="fixed" description="Ea_ext [J/mol]">
+      <Real start="60000.0"/>
+    </ScalarVariable>
+    <ScalarVariable name="k_ref_hyd" valueReference="7" causality="parameter" variability="fixed" description="k_hyd reference rate [1/min]">
+      <Real start="0.015"/>
+    </ScalarVariable>
+    <ScalarVariable name="Ea_hyd" valueReference="8" causality="parameter" variability="fixed" description="Ea_hyd [J/mol]">
+      <Real start="85000.0"/>
+    </ScalarVariable>
+    <ScalarVariable name="k_ref_deg" valueReference="9" causality="parameter" variability="fixed" description="k_deg reference rate [1/min]">
+      <Real start="0.005"/>
+    </ScalarVariable>
+    <ScalarVariable name="Ea_deg" valueReference="10" causality="parameter" variability="fixed" description="Ea_deg [J/mol]">
+      <Real start="100000.0"/>
+    </ScalarVariable>
+    <ScalarVariable name="k_ref_de" valueReference="11" causality="parameter" variability="fixed" description="k_de reference rate [1/min]">
+      <Real start="0.012"/>
+    </ScalarVariable>
+    <ScalarVariable name="Ea_de" valueReference="12" causality="parameter" variability="fixed" description="Ea_de [J/mol]">
+      <Real start="50000.0"/>
+    </ScalarVariable>
+    <ScalarVariable name="Mw_matrix_0" valueReference="13" causality="parameter" variability="fixed" description="Matrix initial Mw [Da]">
+      <Real start="654000.0"/>
+    </ScalarVariable>
+    <ScalarVariable name="DE_matrix_0" valueReference="14" causality="parameter" variability="fixed" description="Matrix initial DE [-]">
+      <Real start="0.745"/>
+    </ScalarVariable>
+    <ScalarVariable name="recovery_eff" valueReference="15" causality="parameter" variability="fixed" description="Separation recovery efficiency [-]">
+      <Real start="0.90"/>
+    </ScalarVariable>
+
+    <!-- Continuous States / Outputs (20 to 25) -->
+    <ScalarVariable name="P_matrix" valueReference="20" causality="output" variability="continuous" description="Insoluble protopectin mass [kg]">
+      <Real/>
+    </ScalarVariable>
+    <ScalarVariable name="P_sol" valueReference="21" causality="output" variability="continuous" description="Soluble target pectin mass [kg]">
+      <Real/>
+    </ScalarVariable>
+    <ScalarVariable name="P_lowMW" valueReference="22" causality="output" variability="continuous" description="Low molecular weight degraded oligomers [kg]">
+      <Real/>
+    </ScalarVariable>
+    <ScalarVariable name="P_loss" valueReference="23" causality="output" variability="continuous" description="Degradation losses / furfural [kg]">
+      <Real/>
+    </ScalarVariable>
+    <ScalarVariable name="Q_DE_sol" valueReference="24" causality="output" variability="continuous" description="De-esterification moment in soluble pool">
+      <Real/>
+    </ScalarVariable>
+    <ScalarVariable name="Q_MW_sol" valueReference="25" causality="output" variability="continuous" description="Molecular weight moment in soluble pool [Da*kg]">
+      <Real/>
+    </ScalarVariable>
+    
+    <!-- Observables / Performance Indicators (30 to 34) -->
+    <ScalarVariable name="yield_pct" valueReference="30" causality="output" variability="continuous" description="Recovered functional pectin yield percentage [%]">
+      <Real/>
+    </ScalarVariable>
+    <ScalarVariable name="P_product" valueReference="31" causality="output" variability="continuous" description="Net recovered functional pectin mass [kg]">
+      <Real/>
+    </ScalarVariable>
+    <ScalarVariable name="DE_sol" valueReference="32" causality="output" variability="continuous" description="Degree of esterification of soluble pectin [-]">
+      <Real/>
+    </ScalarVariable>
+    <ScalarVariable name="Mw_sol" valueReference="33" causality="output" variability="continuous" description="Weight-average molecular weight of soluble pectin [Da]">
+      <Real/>
+    </ScalarVariable>
+    <ScalarVariable name="P_tot" valueReference="34" causality="output" variability="continuous" description="Total mass balance check [kg]">
+      <Real/>
+    </ScalarVariable>
+  </ModelVariables>
+
+  <ModelStructure>
+    <Outputs>
+      <Unknown index="17"/>
+      <Unknown index="18"/>
+      <Unknown index="19"/>
+      <Unknown index="20"/>
+      <Unknown index="21"/>
+      <Unknown index="22"/>
+      <Unknown index="23"/>
+      <Unknown index="24"/>
+      <Unknown index="25"/>
+      <Unknown index="26"/>
+      <Unknown index="27"/>
+    </Outputs>
+    <InitialUnknowns>
+      <Unknown index="17"/>
+      <Unknown index="18"/>
+      <Unknown index="19"/>
+      <Unknown index="20"/>
+      <Unknown index="21"/>
+      <Unknown index="22"/>
+      <Unknown index="23"/>
+      <Unknown index="24"/>
+      <Unknown index="25"/>
+      <Unknown index="26"/>
+      <Unknown index="27"/>
+    </InitialUnknowns>
+  </ModelStructure>
+</fmiModelDescription>

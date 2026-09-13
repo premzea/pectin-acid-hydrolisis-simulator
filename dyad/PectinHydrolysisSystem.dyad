@@ -1,124 +1,267 @@
-"""
-Pectin Acid Hydrolysis Digital Twin System
+"Process Stream Connector"
+connector ProcessStream
+  flow m_flow::Real
+  potential conc::Real
+end
 
-Models the continuous/batch acid hydrolysis cascade for passion fruit rind pectin
-extraction. Integrates solid biomass feed, acid dosing, thermal jacket control,
-the 4-pool reaction kinetic core, inline multi-sensor telemetry (Brix, A284, NIR),
-and downstream pectin fractionation.
-"""
+"Thermal Port Connector"
+connector ThermalPort
+  flow heat_flow::Real
+  potential temp::Real
+end
+
+"Pectin Acid Hydrolysis Digital Twin System"
 component PectinHydrolysisSystem
-  "Biomass feedstock feed hopper"
-  feedstock = FeedstockSource(
-    dry_matter_mass = 1.0,
-    moisture_fraction = 0.10,
-    pectin_mass = 0.233,
-    GalA_fraction = 0.78,
-    DE = 0.745,
-    Mw_matrix = 654000.0,
-    d50_um = 300.0
-  ) {^feedstock}
-
-  "Acid metering and pH regulation unit"
-  acid_doser = AcidDoser(
-    pH_target = 2.0,
-    citric_acid_conc = 0.0
-  ) {^acid_doser}
-
-  "Thermal utility jacket circulator"
-  thermal_jacket = ThermalJacket(
-    T_setpoint_c = 80.0,
-    ramp_rate_c_min = 2.5
-  ) {^thermal_jacket}
-
-  "Core 4-pool acid hydrolysis batch reactor"
-  reactor = BatchHydrolysisReactor(
-    k_ref_ext = 0.035,
-    Ea_ext = 45000.0,
-    k_ref_hyd = 0.015,
-    Ea_hyd = 65000.0,
-    k_ref_deg = 0.005,
-    Ea_deg = 75000.0,
-    k_ref_de = 0.012,
-    Ea_de = 50000.0
-  ) {^reactor}
-
-  "Inline multi-channel soft sensor array"
-  sensors = SensorArray(
-    sigma_A284 = 0.015,
-    sigma_Brix = 0.08,
-    sigma_NIR = 0.005
-  ) {^sensors}
-
-  "Downstream pectin fractionation and recovery unit"
-  fractionator = PectinFractions(
-    recovery_efficiency = 0.90
-  ) {^fractionator}
-
+  feedstock = FeedstockSource() {^feedstock}
+  acid_doser = AcidDoser() {^acid_doser}
+  thermal_jacket = ThermalJacket() {^thermal_jacket}
+  reactor = BatchHydrolysisReactor() {^reactor}
+  sensors = SensorArray() {^sensors}
+  fractionator = PectinFractions() {^fractionator}
 relations
   connect(feedstock.out_solid, reactor.in_feed) {^id1}
-  connect(acid_doser.out_liquid, reactor.in_acid) {^id2}
-  connect(thermal_jacket.out_fluid, reactor.in_thermal) {^id3}
+  connect(acid_doser.out_acid, reactor.in_acid) {^id2}
+  connect(thermal_jacket.out_thermal, reactor.in_thermal) {^id3}
   connect(reactor.out_slurry, sensors.in_sample) {^id4}
   connect(reactor.out_slurry, fractionator.in_slurry) {^id5}
-
 metadata {
-  "Dyad": {
-    "icons": {"default": "dyad://PectinComponents/BatchHydrolysisReactor.svg"}
-  },
+  "Dyad": {"icons": {"default": "dyad://PectinDyad/BatchHydrolysisReactor.svg"}},
   "_links": {
     "feedstock": {
       "Dyad": {
         "placement": {
-          "diagram": {"iconName": "default", "x1": 120, "y1": 120, "x2": 240, "y2": 240, "rot": 0}
+          "diagram": {"iconName": "default", "x1": 100, "y1": 100, "x2": 220, "y2": 220, "rot": 0}
         },
-        "tags": ["biomass", "feedstock"]
+        "tags": []
       }
     },
     "acid_doser": {
       "Dyad": {
         "placement": {
-          "diagram": {"iconName": "default", "x1": 120, "y1": 340, "x2": 240, "y2": 460, "rot": 0}
+          "diagram": {"iconName": "default", "x1": 100, "y1": 320, "x2": 220, "y2": 440, "rot": 0}
         },
-        "tags": ["acid", "dosing"]
+        "tags": []
       }
     },
     "thermal_jacket": {
       "Dyad": {
         "placement": {
-          "diagram": {"iconName": "default", "x1": 460, "y1": 80, "x2": 580, "y2": 200, "rot": 0}
+          "diagram": {"iconName": "default", "x1": 420, "y1": 60, "x2": 540, "y2": 180, "rot": 0}
         },
-        "tags": ["thermal", "utility"]
+        "tags": []
       }
     },
     "reactor": {
       "Dyad": {
         "placement": {
-          "diagram": {"iconName": "default", "x1": 440, "y1": 280, "x2": 600, "y2": 460, "rot": 0}
+          "diagram": {"iconName": "default", "x1": 400, "y1": 260, "x2": 560, "y2": 420, "rot": 0}
         },
-        "tags": ["reactor", "kinetics", "core"]
+        "tags": []
       }
     },
     "sensors": {
       "Dyad": {
         "placement": {
-          "diagram": {"iconName": "default", "x1": 780, "y1": 180, "x2": 900, "y2": 300, "rot": 0}
+          "diagram": {"iconName": "default", "x1": 740, "y1": 160, "x2": 860, "y2": 280, "rot": 0}
         },
-        "tags": ["sensors", "soft_sensor"]
+        "tags": []
       }
     },
     "fractionator": {
       "Dyad": {
         "placement": {
-          "diagram": {"iconName": "default", "x1": 780, "y1": 360, "x2": 900, "y2": 500, "rot": 0}
+          "diagram": {"iconName": "default", "x1": 740, "y1": 340, "x2": 860, "y2": 460, "rot": 0}
         },
-        "tags": ["separation", "fractions"]
+        "tags": []
       }
     },
-    "id1": {"Dyad": {"edges": [{"S": 1, "M": [{"x": 340, "y": 180}, {"x": 340, "y": 320}], "E": 2}], "renderStyle": "standard"}},
-    "id2": {"Dyad": {"edges": [{"S": 1, "M": [{"x": 340, "y": 400}, {"x": 340, "y": 380}], "E": 2}], "renderStyle": "standard"}},
-    "id3": {"Dyad": {"edges": [{"S": 1, "M": [{"x": 520, "y": 200}, {"x": 520, "y": 280}], "E": 2}], "renderStyle": "standard"}},
-    "id4": {"Dyad": {"edges": [{"S": 1, "M": [{"x": 690, "y": 370}, {"x": 690, "y": 240}], "E": 2}], "renderStyle": "standard"}},
-    "id5": {"Dyad": {"edges": [{"S": 1, "M": [{"x": 690, "y": 370}, {"x": 690, "y": 430}], "E": 2}], "renderStyle": "standard"}}
+    "id1": {
+      "Dyad": {
+        "edges": [{"S": 1, "M": [{"x": 310, "y": 160}, {"x": 310, "y": 300}], "E": 2}],
+        "renderStyle": "standard"
+      }
+    },
+    "id2": {
+      "Dyad": {
+        "edges": [{"S": 1, "M": [{"x": 310, "y": 380}, {"x": 310, "y": 370}], "E": 2}],
+        "renderStyle": "standard"
+      }
+    },
+    "id3": {
+      "Dyad": {
+        "edges": [{"S": 1, "M": [{"x": 480, "y": 180}, {"x": 480, "y": 260}], "E": 2}],
+        "renderStyle": "standard"
+      }
+    },
+    "id4": {
+      "Dyad": {
+        "edges": [{"S": 1, "M": [{"x": 650, "y": 340}, {"x": 650, "y": 220}], "E": 2}],
+        "renderStyle": "standard"
+      }
+    },
+    "id5": {
+      "Dyad": {
+        "edges": [{"S": 1, "M": [{"x": 650, "y": 340}, {"x": 650, "y": 400}], "E": 2}],
+        "renderStyle": "standard"
+      }
+    }
+  }
+}
+end
+
+"Solid Biomass Feedstock Source"
+component FeedstockSource
+  parameter dry_matter_mass::Real = 1.0
+  parameter pectin_mass::Real = 0.233
+  parameter DE::Real = 0.745
+  parameter Mw::Real = 654000.0
+  out_solid = ProcessStream() {^out_solid}
+relations
+  out_solid.m_flow = -dry_matter_mass
+  out_solid.conc = pectin_mass
+metadata {
+  "Dyad": {
+    "icons": {"default": "dyad://PectinDyad/FeedstockSource.svg"}
+  },
+  "_links": {
+    "out_solid": {
+      "Dyad": {
+        "placement": {
+          "icon": {"iconName": "default", "x1": 1000, "y1": 450, "x2": 1100, "y2": 550, "rot": 0},
+          "diagram": {"iconName": "default", "x1": 1000, "y1": 450, "x2": 1100, "y2": 550, "rot": 0}
+        }
+      }
+    }
+  }
+}
+end
+
+"Acid Dosing Unit"
+component AcidDoser
+  parameter pH_target::Real = 2.0
+  out_acid = ProcessStream() {^out_acid}
+relations
+  out_acid.m_flow = -0.05
+  out_acid.conc = pH_target
+metadata {
+  "Dyad": {
+    "icons": {"default": "dyad://PectinDyad/AcidDoser.svg"}
+  },
+  "_links": {
+    "out_acid": {
+      "Dyad": {
+        "placement": {
+          "icon": {"iconName": "default", "x1": 1000, "y1": 450, "x2": 1100, "y2": 550, "rot": 0},
+          "diagram": {"iconName": "default", "x1": 1000, "y1": 450, "x2": 1100, "y2": 550, "rot": 0}
+        }
+      }
+    }
+  }
+}
+end
+
+"Thermal Utility Jacket"
+component ThermalJacket
+  parameter T_setpoint::Real = 80.0
+  out_thermal = ThermalPort() {^out_thermal}
+relations
+  out_thermal.temp = T_setpoint
+  out_thermal.heat_flow = -150.0
+metadata {
+  "Dyad": {
+    "icons": {"default": "dyad://PectinDyad/ThermalJacket.svg"}
+  },
+  "_links": {
+    "out_thermal": {
+      "Dyad": {
+        "placement": {
+          "icon": {"iconName": "default", "x1": 500, "y1": 1000, "x2": 600, "y2": 1100, "rot": 0},
+          "diagram": {"iconName": "default", "x1": 500, "y1": 1000, "x2": 600, "y2": 1100, "rot": 0}
+        }
+      }
+    }
+  }
+}
+end
+
+"Batch Hydrolysis Reactor Core"
+component BatchHydrolysisReactor
+  parameter k_hyd::Real = 0.015
+  parameter Ea_hyd::Real = 65000.0
+  in_feed = ProcessStream() {^in_feed}
+  in_acid = ProcessStream() {^in_acid}
+  in_thermal = ThermalPort() {^in_thermal}
+  out_slurry = ProcessStream() {^out_slurry}
+  variable P_sol::Real
+  variable P_lowMW::Real
+relations
+  initial P_sol = 0.233
+  initial P_lowMW = 0.0
+  der(P_sol) = -k_hyd * P_sol
+  der(P_lowMW) = k_hyd * P_sol
+  in_feed.m_flow = 1.0
+  in_acid.m_flow = 0.05
+  in_thermal.heat_flow = 150.0
+  out_slurry.m_flow = -1.05
+  out_slurry.conc = P_sol
+metadata {
+  "Dyad": {
+    "icons": {"default": "dyad://PectinDyad/BatchHydrolysisReactor.svg"}
+  },
+  "_links": {
+    "in_feed": {
+      "Dyad": {"placement": {"icon": {"iconName": "default", "x1": -100, "y1": 200, "x2": 0, "y2": 300, "rot": 0}, "diagram": {"iconName": "default", "x1": -100, "y1": 200, "x2": 0, "y2": 300, "rot": 0}}}
+    },
+    "in_acid": {
+      "Dyad": {"placement": {"icon": {"iconName": "default", "x1": -100, "y1": 700, "x2": 0, "y2": 800, "rot": 0}, "diagram": {"iconName": "default", "x1": -100, "y1": 700, "x2": 0, "y2": 800, "rot": 0}}}
+    },
+    "in_thermal": {
+      "Dyad": {"placement": {"icon": {"iconName": "default", "x1": 500, "y1": -100, "x2": 600, "y2": 0, "rot": 0}, "diagram": {"iconName": "default", "x1": 500, "y1": -100, "x2": 600, "y2": 0, "rot": 0}}}
+    },
+    "out_slurry": {
+      "Dyad": {"placement": {"icon": {"iconName": "default", "x1": 1000, "y1": 450, "x2": 1100, "y2": 550, "rot": 0}, "diagram": {"iconName": "default", "x1": 1000, "y1": 450, "x2": 1100, "y2": 550, "rot": 0}}}
+    }
+  }
+}
+end
+
+"Soft Sensor Suite"
+component SensorArray
+  in_sample = ProcessStream() {^in_sample}
+  variable A284::Real
+  variable Brix::Real
+relations
+  in_sample.m_flow = 0.0
+  A284 = 0.5 * in_sample.conc
+  Brix = 10.0 * in_sample.conc
+metadata {
+  "Dyad": {
+    "icons": {"default": "dyad://PectinDyad/SensorArray.svg"}
+  },
+  "_links": {
+    "in_sample": {
+      "Dyad": {"placement": {"icon": {"iconName": "default", "x1": -100, "y1": 450, "x2": 0, "y2": 550, "rot": 0}, "diagram": {"iconName": "default", "x1": -100, "y1": 450, "x2": 0, "y2": 550, "rot": 0}}}
+    }
+  }
+}
+end
+
+"Pectin Fractionation Separator"
+component PectinFractions
+  in_slurry = ProcessStream() {^in_slurry}
+  parameter efficiency::Real = 0.90
+  variable yield_sol::Real
+relations
+  in_slurry.m_flow = 1.05
+  yield_sol = efficiency * in_slurry.conc
+metadata {
+  "Dyad": {
+    "icons": {"default": "dyad://PectinDyad/PectinFractions.svg"}
+  },
+  "_links": {
+    "in_slurry": {
+      "Dyad": {"placement": {"icon": {"iconName": "default", "x1": -100, "y1": 450, "x2": 0, "y2": 550, "rot": 0}, "diagram": {"iconName": "default", "x1": -100, "y1": 450, "x2": 0, "y2": 550, "rot": 0}}}
+    }
   }
 }
 end

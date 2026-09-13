@@ -1,0 +1,21 @@
+"Pectin Hydrolysis Reactor"
+component PectinReactor
+  parameter T_reactor::Real = 80.0
+  parameter pH_reactor::Real = 2.0
+  parameter k_hyd::Real = 0.015
+  variable P_sol::Real
+  variable P_lowMW::Real
+relations
+  initial P_sol = 0.233
+  initial P_lowMW = 0.0
+  der(P_sol) = -k_hyd * P_sol
+  der(P_lowMW) = k_hyd * P_sol
+metadata {
+  "Dyad": {
+    "placement": {
+      "diagram": {"iconName": "default", "x1": 100, "y1": 100, "x2": 250, "y2": 250, "rot": 0}
+    },
+    "icons": {"default": "dyad://PectinDyad/BatchHydrolysisReactor.svg"}
+  }
+}
+end

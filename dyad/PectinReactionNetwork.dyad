@@ -1,0 +1,151 @@
+"Chemical Flux Mass Rate Connector"
+connector ChemicalFlux
+  flow m_flux::Real
+  potential conc::Real
+end
+
+"Pectin 4-Pool Mechanistic Reaction Network"
+component PectinReactionNetwork
+  "Protopectin in rind insoluble matrix"
+  pool_matrix = KineticPool(initial_mass = 0.2333) {^pool_matrix}
+  
+  "Extraction & solubilization step: P_matrix -> P_sol"
+  rxn_ext = ReactionStep(k = 0.035) {^rxn_ext}
+  
+  "Target soluble functional pectin pool"
+  pool_sol = KineticPool(initial_mass = 0.0) {^pool_sol}
+  
+  "Chain scission acid hydrolysis step: P_sol -> P_lowMW"
+  rxn_hyd = ReactionStep(k = 0.015) {^rxn_hyd}
+  
+  "Low molecular weight degraded oligomers"
+  pool_lowMW = KineticPool(initial_mass = 0.0) {^pool_lowMW}
+  
+  "Deep degradation step: P_lowMW -> P_loss"
+  rxn_deg = ReactionStep(k = 0.005) {^rxn_deg}
+  
+  "Degradation products (furfural, monomers, losses)"
+  pool_loss = KineticPool(initial_mass = 0.0) {^pool_loss}
+relations
+  connect(pool_matrix.out_flux, rxn_ext.in_flux) {^id1}
+  connect(rxn_ext.out_flux, pool_sol.in_flux) {^id2}
+  connect(pool_sol.out_flux, rxn_hyd.in_flux) {^id3}
+  connect(rxn_hyd.out_flux, pool_lowMW.in_flux) {^id4}
+  connect(pool_lowMW.out_flux, rxn_deg.in_flux) {^id5}
+  connect(rxn_deg.out_flux, pool_loss.in_flux) {^id6}
+metadata {
+  "Dyad": {
+    "icons": {"default": "dyad://PectinDyad/Pool_Sol.svg"}
+  },
+  "_links": {
+    "pool_matrix": {
+      "Dyad": {
+        "placement": {
+          "diagram": {"iconName": "default", "x1": 60, "y1": 180, "x2": 180, "y2": 300, "rot": 0}
+        },
+        "icons": {"default": "dyad://PectinDyad/Pool_Matrix.svg"}
+      }
+    },
+    "rxn_ext": {
+      "Dyad": {
+        "placement": {
+          "diagram": {"iconName": "default", "x1": 240, "y1": 200, "x2": 320, "y2": 280, "rot": 0}
+        },
+        "icons": {"default": "dyad://PectinDyad/ReactionFlux.svg"}
+      }
+    },
+    "pool_sol": {
+      "Dyad": {
+        "placement": {
+          "diagram": {"iconName": "default", "x1": 380, "y1": 180, "x2": 500, "y2": 300, "rot": 0}
+        },
+        "icons": {"default": "dyad://PectinDyad/Pool_Sol.svg"}
+      }
+    },
+    "rxn_hyd": {
+      "Dyad": {
+        "placement": {
+          "diagram": {"iconName": "default", "x1": 560, "y1": 200, "x2": 640, "y2": 280, "rot": 0}
+        },
+        "icons": {"default": "dyad://PectinDyad/ReactionFlux.svg"}
+      }
+    },
+    "pool_lowMW": {
+      "Dyad": {
+        "placement": {
+          "diagram": {"iconName": "default", "x1": 700, "y1": 180, "x2": 820, "y2": 300, "rot": 0}
+        },
+        "icons": {"default": "dyad://PectinDyad/Pool_LowMW.svg"}
+      }
+    },
+    "rxn_deg": {
+      "Dyad": {
+        "placement": {
+          "diagram": {"iconName": "default", "x1": 880, "y1": 200, "x2": 960, "y2": 280, "rot": 0}
+        },
+        "icons": {"default": "dyad://PectinDyad/ReactionFlux.svg"}
+      }
+    },
+    "pool_loss": {
+      "Dyad": {
+        "placement": {
+          "diagram": {"iconName": "default", "x1": 1020, "y1": 180, "x2": 1140, "y2": 300, "rot": 0}
+        },
+        "icons": {"default": "dyad://PectinDyad/Pool_Loss.svg"}
+      }
+    },
+    "id1": {"Dyad": {"edges": [{"S": 1, "M": [], "E": 2}], "renderStyle": "standard"}},
+    "id2": {"Dyad": {"edges": [{"S": 1, "M": [], "E": 2}], "renderStyle": "standard"}},
+    "id3": {"Dyad": {"edges": [{"S": 1, "M": [], "E": 2}], "renderStyle": "standard"}},
+    "id4": {"Dyad": {"edges": [{"S": 1, "M": [], "E": 2}], "renderStyle": "standard"}},
+    "id5": {"Dyad": {"edges": [{"S": 1, "M": [], "E": 2}], "renderStyle": "standard"}},
+    "id6": {"Dyad": {"edges": [{"S": 1, "M": [], "E": 2}], "renderStyle": "standard"}}
+  }
+}
+end
+
+"Kinetic Chemical Mass State Pool"
+component KineticPool
+  parameter initial_mass::Real = 0.0
+  in_flux = ChemicalFlux() {^in_flux}
+  out_flux = ChemicalFlux() {^out_flux}
+  variable mass::Real
+relations
+  initial mass = initial_mass
+  der(mass) = in_flux.m_flux - out_flux.m_flux
+  out_flux.conc = mass
+metadata {
+  "Dyad": {"icons": {"default": "dyad://PectinDyad/Pool_Sol.svg"}},
+  "_links": {
+    "in_flux": {
+      "Dyad": {"placement": {"icon": {"x1": -100, "y1": 450, "x2": 0, "y2": 550, "rot": 0}, "diagram": {"x1": -100, "y1": 450, "x2": 0, "y2": 550, "rot": 0}}}
+    },
+    "out_flux": {
+      "Dyad": {"placement": {"icon": {"x1": 1000, "y1": 450, "x2": 1100, "y2": 550, "rot": 0}, "diagram": {"x1": 1000, "y1": 450, "x2": 1100, "y2": 550, "rot": 0}}}
+    }
+  }
+}
+end
+
+"Reaction Step Rate Converter"
+component ReactionStep
+  parameter k::Real = 0.015
+  in_flux = ChemicalFlux() {^in_flux}
+  out_flux = ChemicalFlux() {^out_flux}
+  variable r::Real
+relations
+  r = k * in_flux.conc
+  in_flux.m_flux = r
+  out_flux.m_flux = r
+metadata {
+  "Dyad": {"icons": {"default": "dyad://PectinDyad/ReactionFlux.svg"}},
+  "_links": {
+    "in_flux": {
+      "Dyad": {"placement": {"icon": {"x1": -100, "y1": 450, "x2": 0, "y2": 550, "rot": 0}, "diagram": {"x1": -100, "y1": 450, "x2": 0, "y2": 550, "rot": 0}}}
+    },
+    "out_flux": {
+      "Dyad": {"placement": {"icon": {"x1": 1000, "y1": 450, "x2": 1100, "y2": 550, "rot": 0}, "diagram": {"x1": 1000, "y1": 450, "x2": 1100, "y2": 550, "rot": 0}}}
+    }
+  }
+}
+end

@@ -40,9 +40,9 @@ Where:
 - `S` is the sensitivity matrix (d y / d θ) of size (N_measurements x N_parameters)
 - `cov_proxy` is the empirical measurement error covariance matrix (Σ_proxy)
 """
-function compute_fim(sensitivities::AbstractMatrix{<:Real}, cov_proxy::AbstractMatrix{<:Real})
-    inv_cov = inv(cov_proxy)
-    return sensitivities' * inv_cov * sensitivities
+function compute_fim(sensitivities::AbstractMatrix{T}, cov_proxy::AbstractMatrix{T}) where {T<:Real}
+    # S^T * (cov_proxy \ S) avoids explicit matrix inversion for numerical stability and precision
+    return sensitivities' * (cov_proxy \ sensitivities)
 end
 
 end # module Sensors

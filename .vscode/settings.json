@@ -1,0 +1,10 @@
+{
+  "editor.codeLens": true,
+  "dyad-studio.inlineMetadata": false,
+  "julia.environmentPath": "${workspaceFolder}",
+  "julia.NumThreads": "auto",
+  "julia.executablePath": "/home/eduzea/.julia/juliaup-depots/juliahub.com/juliaup/julia-1.12.7+dyad-3x3x0.x64.linux.musl/bin/julia",
+  "julia.additionalArgs": [
+    "--optimize=0"
+  ]
+}
